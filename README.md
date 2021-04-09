@@ -23,7 +23,7 @@ Check out our other project [Ganary](https://github.com/bscotch/ganary), which u
 Import the resources in the "Olympus" group, such as using [Stitch](https://github.com/bscotch/stitch#merging-projects-):
 
 ```sh
-stitch merge --source=path/to/Olympus --if-folder-matches=Olympus
+stitch merge --source-github=bscotch/olympus --if-folder-matches=Olympus
 ```
 
 Compose your test suite:
