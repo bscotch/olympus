@@ -1,4 +1,19 @@
 #region private 
+
+/*
+@desc Globals added for new functionality
+*/
+global._olympus_default_hook_before_each_test_start = undefined;
+global._olympus_default_hook_after_each_test_finish = undefined;
+
+global._olympus_default_code_injection_after_test_start = undefined;
+global._olympus_default_code_injection_before_test_end = undefined;
+
+global._olympus_default_hook_before_suite_start = undefined;
+global._olympus_default_hook_after_suite_finish = undefined;
+
+global._olympus_default_test_context = undefined;
+
 /** 
 @desc In the suite summary struct, the "status" key uses the following macros
  */
@@ -146,7 +161,7 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 	global._olympus_test_manager = self;
 	_tests = [];
 	_startTime=undefined;
-	_function_to_call_on_suite_finish= undefined; // User-provided function to execute when all tests have concluded.
+	_function_to_call_on_suite_finish = undefined; // User-provided function to execute when all tests have concluded.
 	_function_to_call_on_suite_start = undefined; // User-provided function to execute before all tests start.
 	_current_test_index = -1;
 	_default_timeout = 60000; 
@@ -354,9 +369,16 @@ function _Olympus_Test(name, fn) constructor {
 	var resolution_context = options[$"resolution_context"];
 	var timeout_millis = options [$"timeout_millis"];
 
+	var start_code = options[$"start_code"];
+	var end_code = options[$"end_code"];
+
 	_name = name;
+	
+	_start_code = is_method(start_code) ? start_code : global._olympus_default_code_injection_after_test_start;
 	_test_fn = fn;
-	_test_fn_context = is_struct(context) ? context : undefined;
+	_test_fn_context = is_struct(context) ? context : global._olympus_default_test_context;
+	_end_code = is_method(end_code) ? end_code : global._olympus_default_code_injection_before_test_end;
+	
 	var test_index = global._olympus_test_manager.add_test(self);
 	_index = test_index;
 	disabled = false;
@@ -389,8 +411,11 @@ function _Olympus_Test(name, fn) constructor {
 	
 	///@desc Ensure the test callback and resolution callback have access to their contexts
 	_bind_callback_context = function(){		
-		if (is_struct(_test_fn_context)){
-			_test_fn = method(_test_fn_context, _test_fn);
+		var _context = _test_fn_context;
+			
+		if (is_struct(_context)) {
+			// Context is a struct
+			_test_fn = method(_context, _test_fn);
 		}
 				
 		if (_is_async && _resolution_fn != noone &&  is_struct(_resolution_fn_context)){
@@ -505,8 +530,22 @@ function _Olympus_Test(name, fn) constructor {
 					_attach_callback_to_mediator();
 				}
 				else{
-					_test_fn(); 
-					if  ((current_time - _start_time) > timeout) {
+					
+					if (is_method(_start_code)) {
+						_start_code();
+					}
+					
+					// Time can be measured with more precision like this
+					// and adding the same line to the "catch" 
+					// _start_time = current_time;
+					_test_fn();
+					// _set_completion_time();
+					
+					if (is_method(_end_code)) {
+						_end_code();
+					}
+
+					if  (_completion_time > timeout) {
 						reject( new _Olympus_Test_Error("Sync Test Exceeded Timeout: " + string(timeout)), olympus_error_code.timeout);
 					}
 					else{
@@ -514,6 +553,7 @@ function _Olympus_Test(name, fn) constructor {
 					}
 				}
 			} catch (err){
+				// _set_completion_time();
 				var code = olympus_error_code.failed_sync;
 				if (_is_async){
 					code = olympus_error_code.failed_async_mediator_spawning;
@@ -560,7 +600,7 @@ function _Olympus_Test(name, fn) constructor {
 		_done();
 	}
 
-	_set_completion_time = function(){
+	_set_completion_time = function() {
 		var test_finish_time = current_time;
 		var test_duration = test_finish_time - _start_time;
 		_completion_time = test_duration;

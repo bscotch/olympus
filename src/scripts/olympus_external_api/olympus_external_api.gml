@@ -58,6 +58,8 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 	#macro olympus_test_options_context context
 	#macro olympus_test_options_resolution_context resolution_context
 	#macro olympus_test_options_timeout_millis timeout_millis
+	#macro olympus_test_options_start_code start_code
+	#macro olympus_test_options_end_code end_code
 #endregion
 
 /** 
@@ -135,6 +137,111 @@ function xolympus_add_async_test(name){
 function xolympus_add_async_test_with_user_feedback(name){	
 	var this_test = xolympus_add_async_test(name);
 	return this_test;
+}
+
+/**
+@desc Set a default context to be used for all the tests.
+@param {struct/object} context The context to execute the test in
+*/
+function olympus_set_default_test_context(context){
+	_olympus_forbid_change_during_testing();
+	if (!is_struct(context) && !object_exists(context))
+		throw("Argument should be a struct/object!");
+	else {
+		global._olympus_default_test_context = context
+	}
+}
+
+/**
+@desc Set a default function to be excuted before each test starts. The test summary struct is passed to this function as the first argument.
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_default_hook_before_each_test_start(function_to_execute){
+	var context = argument_count > 1 ? argument[1] : self
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_hook_before_each_test_start = method(context, function_to_execute);
+	}
+}
+
+/**
+@desc Set a default function to be executed at the start of each test (as part of test's logic, won't count for test duration)
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_default_test_start_code_injection(function_to_execute){
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_code_injection_after_test_start = method(undefined, function_to_execute);
+	}
+}
+
+/**
+@desc Set a default function to be executed at the end of each test (as part of test's logic, won't count for test duration)
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_default_test_end_code_injection(function_to_execute){
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_code_injection_before_test_end = method(undefined, function_to_execute);
+	}
+}
+
+/** 
+@desc Set a default function to be excuted after each test finishes. The test summary struct is passed to this function as the first argument.
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_default_hook_after_each_test_finish(function_to_execute){
+	var context = argument_count > 1 ? argument[1] : self
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_hook_after_each_test_finish = method(context, function_to_execute);
+	}
+}
+
+/** 
+@desc Set a function to be excuted after each test finishes. The test summary struct is passed to this function as the first argument.
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_hook_after_each_test_finish(function_to_execute){
+	var context = argument_count > 1 ? argument[1] : self
+	_olympus_add_hook_after_each_test_finish(function_to_execute, context);
+}
+
+/**
+@desc Set a default function to be excuted before the suite starts. The suite summary struct is passed to this function as the first argument.
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+*/
+function olympus_set_default_hook_before_suite_start(function_to_execute){
+	var context = argument_count > 1 ? argument[1] : self
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_hook_before_suite_start = method(context, function_to_execute);
+	}
+}
+
+/** 
+@desc Set a default function to be excuted after the suite finishes. The suite summary struct is passed to this function as the first argument.
+@param {function} function_to_execute The function to execute
+@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+ */
+function olympus_set_default_hook_after_suite_finish(function_to_execute){
+	var context = argument_count > 1 ? argument[1] : self
+	if (!is_method(function_to_execute))
+		throw("Argument should be a function!");
+	else {
+		global._olympus_default_hook_after_suite_finish = method(context, function_to_execute);
+	}
 }
 
 /**

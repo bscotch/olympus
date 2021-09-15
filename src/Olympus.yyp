@@ -24,6 +24,7 @@
     {"id":{"name":"demo_olympus_obj_sound_renderer","path":"objects/demo_olympus_obj_sound_renderer/demo_olympus_obj_sound_renderer.yy",},"order":8,},
     {"id":{"name":"demo_olympus_crash_recover","path":"scripts/demo_olympus_crash_recover/demo_olympus_crash_recover.yy",},"order":14,},
     {"id":{"name":"demo_olympus_test_explicit_dependencies","path":"scripts/demo_olympus_test_explicit_dependencies/demo_olympus_test_explicit_dependencies.yy",},"order":11,},
+    {"id":{"name":"demo_olympus_default_hooks","path":"scripts/demo_olympus_default_hooks/demo_olympus_default_hooks.yy",},"order":18,},
     {"id":{"name":"_olympus_async_test_controller","path":"objects/_olympus_async_test_controller/_olympus_async_test_controller.yy",},"order":0,},
     {"id":{"name":"rm_init","path":"rooms/rm_init/rm_init.yy",},"order":0,},
     {"id":{"name":"_olympus_internal","path":"scripts/_olympus_internal/_olympus_internal.yy",},"order":1,},
@@ -75,7 +76,7 @@
   ],
   "IncludedFiles": [],
   "MetaData": {
-    "IDEVersion": "23.1.1.268",
+    "IDEVersion": "23.1.1.382",
   },
   "resourceVersion": "1.4",
   "name": "Olympus",
