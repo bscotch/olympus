@@ -16,11 +16,20 @@
   "GamePipe": {
     "title": "Olympus",
     "slug": "Olympus",
-    "yyp": "Olympus/Olympus.yyp",
-    "localAppDataDirectory": "Olympus"
+    "yyp": "src/Olympus.yyp",
+    "localAppDataDirectory": "Olympus",
+    "modules": [
+      {
+        "repo": "git@github.com:bscotch/bscotch-pack.git",
+        "names": [
+          "Olympus"
+        ],
+        "branch": "develop",
+        "revision": "541f84d456d9abbc457dfec929f5bd7392a1d339"
+      }
+    ]
   },
   "author": "Shi Chen",
   "license": "MIT",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

@@ -184,6 +184,20 @@ function olympus_get_current_suite_summary(){
 	return global._olympus_summary_manager.get_summary();
 }
 
+/**
+@desc Return a boolean of whether the current suite contains failed or crashed tests
+*/
+function olympus_current_suite_summary_has_failure_or_crash(){
+	return global._olympus_summary_manager.has_failure_or_crash();
+}
+
+/**
+@desc Return an array of test summaries for the tests that failed or crashed
+*/
+function olympus_get_failed_or_crashed_tests(){
+	return global._olympus_summary_manager.get_failed_or_crashed_tests();
+}
+
 /** 
 @desc Return a copy of the array that contains all the up-to-date test summaries. 
 */
@@ -219,6 +233,16 @@ function olympus_test_dependency_chain_begin(){
 */
 function olympus_test_dependency_chain_end(){
 	global._olympus_test_manager.dependency_chain_end();
+}
+
+/**
+@desc Allows setting the global option olympus_suite_options_test_interval_milis in the mid of a suite  
+@param {number}	[test_interval_milis=0] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
+*/
+function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
+	with _olympus_async_test_controller{
+		_interval_between_tests = test_interval_milis/1000;
+	}
 }
 
 #region Macros

@@ -113,7 +113,7 @@ function _olympus_get_callback_handle(callback_struct_variable_name){
 		var current_test = global._olympus_test_manager.get_current_test();
 		var callback_name = current_test[$ callback_struct_variable_name];
 		var mediator_id = global._olympus_test_manager.get_current_test()._mediator_id; 
-		var callback_handle = (mediator_id == id) ? variable_instance_get(id, callback_name) : function(){_olympus_console_log("This mediator already timed out:", object_get_name(object_index))};
+		var callback_handle = (mediator_id == id) ? variable_instance_get(id, callback_name) : function(){_olympus_console_log("This mediator already timed out:", object_get_name(object_index), id)};
 	}
 	return callback_handle;
 }
@@ -249,6 +249,7 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 				_function_to_call_on_suite_start(global._olympus_summary_manager.get_summary());
 			}
 			test_index = global._olympus_summary_manager.get_beginning_test_index();
+			_olympus_console_log("Executing test #", test_index);
 		}
 		else{
 			_olympus_console_log("Executing test #", test_index);
@@ -402,30 +403,39 @@ function _Olympus_Test(name, fn) constructor {
 		timeout = milliseconds;
 	}
 
+	_run_resolution_fn = function(_param_array){
+		_resolution_fn(_param_array);					
+		if (_user_feedback_required){
+			status = olympus_test_status_getting_user_feedback;
+			_set_completion_time(); //Stop incremention the completion time as we don't know how long the user will take to complete the test
+			var user_feedback_handle = _get_user_feedback_async();
+			with _olympus_async_test_controller{
+				_user_feedback_handle = user_feedback_handle;
+			}							
+		}
+		else{
+			resolve();
+		}		
+	}
+
 	_create_resolution_callback = function(){	
 		return method(self, function(){			
 			if (status == olympus_test_status_running){
-				try{
-					var _param_array = [];
-					for (var i = 0; i < argument_count; i ++){
-						_param_array[i] = argument[i];
-					}					
-					_resolution_fn(_param_array);
-					
-					if (_user_feedback_required){
-						status = olympus_test_status_getting_user_feedback;
-						_set_completion_time(); //Stop incremention the completion time as we don't know how long the user will take to complete the test
-						var user_feedback_handle = _get_user_feedback_async();
-						with _olympus_async_test_controller{
-							_user_feedback_handle = user_feedback_handle;
-						}							
-					}
-					else{
-						resolve();
-					}										
+				var _param_array = [];
+				for (var i = 0; i < argument_count; i ++){
+					_param_array[i] = argument[i];
+				}						
+				
+				if (global._olympus_test_manager._allow_uncaught){
+					_run_resolution_fn(_param_array);
 				}
-				catch(err){					
-					reject(err, olympus_error_code.failed_resolution);
+				else{
+					try{
+						_run_resolution_fn(_param_array);
+					}
+					catch(err){					
+						reject(err, olympus_error_code.failed_resolution);
+					}					
 				}
 			}
 			else{
@@ -488,7 +498,22 @@ function _Olympus_Test(name, fn) constructor {
 			_err = new _Olympus_Test_Error("Skipped because dependency did not pass", olympus_error_code.skip_with_dependency, _get_non_passing_dependency_names());
 		}		
 	}	
-	
+
+	_run_test_fn = function(){
+		if(_is_async){
+			_attach_callback_to_mediator();
+		}
+		else{
+			_test_fn(); 
+			if  ((current_time - _start_time) > timeout) {
+				reject( new _Olympus_Test_Error("Sync Test Exceeded Timeout: " + string(timeout)), olympus_error_code.timeout);
+			}
+			else{
+				resolve();
+			}
+		}			
+	}
+
 	///@description Run test
 	run = function (){
 		_set_up();
@@ -500,25 +525,19 @@ function _Olympus_Test(name, fn) constructor {
 			_skip();			
 		}
 		else{
-			try {
-				if(_is_async){
-					_attach_callback_to_mediator();
+			if (global._olympus_test_manager._allow_uncaught){
+					_run_test_fn()			
+			}
+			else{
+				try {
+					_run_test_fn();
+				} catch (err){
+					var code = olympus_error_code.failed_sync;
+					if (_is_async){
+						code = olympus_error_code.failed_async_mediator_spawning;
+					}				
+					reject(err, code);
 				}
-				else{
-					_test_fn(); 
-					if  ((current_time - _start_time) > timeout) {
-						reject( new _Olympus_Test_Error("Sync Test Exceeded Timeout: " + string(timeout)), olympus_error_code.timeout);
-					}
-					else{
-						resolve();
-					}
-				}
-			} catch (err){
-				var code = olympus_error_code.failed_sync;
-				if (_is_async){
-					code = olympus_error_code.failed_async_mediator_spawning;
-				}				
-				reject(err, code);
 			}
 		}
 	}		
@@ -678,7 +697,7 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 			optimized : code_is_compiled()
 		},
 		os: {
-			id: os_type
+			identifier: os_type
 		},
 		project:{
 			name: game_project_name,
@@ -775,7 +794,7 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 	///@description Check whether the summary data is outdated from the current setting
 	_summary_data_is_outdated = function(summary){
 		return summary.config.project.config  != os_get_config()
-		||summary.config.os.id != os_type
+		||summary.config.os.identifier != os_type
 		||summary.config.project.name != game_project_name
 		|| summary.config.project.version != GM_version
 		|| summary.config.project.debug != debug_mode
@@ -924,7 +943,23 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 	///@desc Return the copy of the summary struct
 	has_failure_or_crash = function(){
 		return (_summary.tallies.failed > 0 || _summary.tallies.crashed >0);				
-	}	
+	}
+	
+	get_failed_or_crashed_tests = function(){
+		var failed_or_crashed_tests = array_create(0);
+		for (var i = 0; i < array_length(_summary.tests); i++){
+			var a_test = _summary.tests[i];
+			switch (a_test.status){
+				case olympus_test_status_failed:
+				case olympus_test_status_crashed:
+					array_push(failed_or_crashed_tests, a_test);
+					break;
+				default:
+					break;
+			}
+		}
+		return array_clone(failed_or_crashed_tests);
+	}
 
 	_get_prettified_summary = function(){
 		var _summary = get_summary();
