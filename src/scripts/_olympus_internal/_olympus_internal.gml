@@ -145,6 +145,7 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 	//TODO: The reference should be managed by the meta controller when it is implemented.
 	global._olympus_test_manager = self;
 	_tests = [];
+	_should_disable_all_but_only = false;
 	_startTime=undefined;
 	_function_to_call_on_suite_finish= undefined; // User-provided function to execute when all tests have concluded.
 	_function_to_call_on_suite_start = undefined; // User-provided function to execute before all tests start.
@@ -174,6 +175,16 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 			function_to_add_tests_and_hooks = method(context, function_to_add_tests_and_hooks);
 		}		
 		function_to_add_tests_and_hooks();
+		
+		if (_should_disable_all_but_only){
+			for (var i = 0; i < array_length(_tests); i++){
+				var this_test = _tests[i];
+				if (!this_test._only){
+					this_test.disabled = true;
+				}
+			}
+		}
+		
 		_suite_name = suite_name;
 		 global._olympus_summary_manager = new _Olympus_Summary_Manager(_suite_name);
 		
@@ -301,7 +312,11 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 	///@description Adds a test to this manager and return the test index
 	///@param {Struct} test
 	add_test = function(test){
-		var test_name = test._name
+		var test_name = test._name;
+		if (test._only) {
+			_should_disable_all_but_only = true;
+		}
+		
 		if (get_test_by_name(test_name) != noone){
 			throw({message: "This test name was already added: " + test_name, name: test_name});
 		}
@@ -354,10 +369,12 @@ function _Olympus_Test(name, fn) constructor {
 	var context = options[$"context"];
 	var resolution_context = options[$"resolution_context"];
 	var timeout_millis = options [$"timeout_millis"];
+	var only = options [$ "only"];
 
 	_name = name;
 	_test_fn = fn;
 	_test_fn_context = is_struct(context) ? context : undefined;
+	_only = only;
 	var test_index = global._olympus_test_manager.add_test(self);
 	_index = test_index;
 	disabled = false;

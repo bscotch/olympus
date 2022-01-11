@@ -43,6 +43,7 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 	@property {struct} [context] The binding context for function_to_execute_synchronous_logic. The default uses the calling context.
 	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
 	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
+	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
  */
 function olympus_add_test(name, function_to_execute_synchronous_logic){	
 	function_to_execute_synchronous_logic = method(self, function_to_execute_synchronous_logic);
@@ -58,6 +59,7 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 	#macro olympus_test_options_context context
 	#macro olympus_test_options_resolution_context resolution_context
 	#macro olympus_test_options_timeout_millis timeout_millis
+	#macro olympus_test_options_only only
 #endregion
 
 /** 
@@ -72,6 +74,7 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 	@property {struct} [contex] The binding context for function_to_spawn_object. The default uses the calling context.
 	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution	
 	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
+	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
  */
 function olympus_add_async_test(name, function_to_spawn_object){
 	function_to_spawn_object = method(self, function_to_spawn_object);
@@ -95,7 +98,8 @@ function olympus_add_async_test(name, function_to_spawn_object){
 	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
 	@property {struct} [context] The binding context for function_to_spawn_object. The default uses the calling context.
 	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution. The default uses the calling context.
-	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.	
+	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
+	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled	
  */
 function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spawn_object){	
 	function_to_spawn_object = method(self, function_to_spawn_object);
@@ -243,6 +247,34 @@ function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
 	with _olympus_async_test_controller{
 		_interval_between_tests = test_interval_milis/1000;
 	}
+}
+
+/**
+@desc Spawn an awaiter object that wait for the creation of a target object. If the target is created, the awaiter is destroyed, and the target's instance ID is returned. 
+@param {object}	object_to_wait The target object to wait for
+*/
+function olympus_spawn_object_creation_awaiter(object_to_wait){
+	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: object_to_wait});
+}
+
+/**
+@desc Spawn an awaiter object that wait for the absence of a target object. If the target no longer exists, the awaiter is destroyed. 
+@param {object}	object_to_wait The object to wait for
+*/
+function olympus_spawn_object_absence_awaiter(object_to_wait){
+	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: object_to_wait});
+}
+
+/**
+@desc Spawn an awaiter object that evaluate the return of a function at every step. When the function evaluates true, the awaiter is destroyed.
+@param {function} function_to_wait_for The function to evaluate.
+@param {struct} [context] The binding context for function_to_wait_for. The default uses the calling context. 
+*/
+function olympus_spawn_awaiter(function_to_wait_for, context = self){
+	function_to_wait_for = method(context, function_to_wait_for);
+	var awaiter = instance_create_depth(0,0,0, _olympus_async_awaiter);
+	awaiter._function_to_wait_for = function_to_wait_for;
+	return awaiter;
 }
 
 #region Macros

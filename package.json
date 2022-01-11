@@ -1,6 +1,6 @@
 {
   "name": "olympus",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Testing framework for GMS 2.3.1+ projects with useful features",
   "scripts": {
     "preversion": "git fetch --tags",
@@ -25,7 +25,7 @@
           "Olympus"
         ],
         "branch": "develop",
-        "revision": "541f84d456d9abbc457dfec929f5bd7392a1d339"
+        "revision": "88639a356946ee0618b2bd7428aaf55e4d5ec289"
       }
     ]
   },

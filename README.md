@@ -16,7 +16,7 @@ Testing framework for [GMS 2.3.1+](https://www.yoyogames.com/blog/592/gms2-versi
 Olympus is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
 Check out our other project [Ganary](https://github.com/bscotch/ganary), which uses Olympus to run regression tests for GameMaker Runtime.
 
-*GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Olympus are not affiliated with Yoyo Games.*
+_GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Olympus are not affiliated with Yoyo Games._
 
 ## Quick start
 
@@ -30,22 +30,23 @@ Compose your test suite:
 
 ```ts
 //Name your test suite
-olympus_run("my suite name", function(){
+olympus_run("my suite name", function () {
   //Add a unit test
-  olympus_add_test(    
+  olympus_add_test(
     //Name your unit test
-    "my unit test name",     
-    //Define the test assertion logic 
-    function(){
+    "my unit test name",
+    //Define the test assertion logic
+    function () {
       var expected = "2";
       var actual = "1";
-      if (actual != expected){
-      throw({
-        message: "Expected: " + expected + ". Actual: " + actual, 
-        stacktrace: debug_get_callstack()
-      });
-    }     
-  });  
+      if (actual != expected) {
+        throw {
+          message: "Expected: " + expected + ". Actual: " + actual,
+          stacktrace: debug_get_callstack(),
+        };
+      }
+    }
+  );
 });
 ```
 
@@ -54,13 +55,13 @@ olympus_run("my suite name", function(){
 Test record is written to file in [the Save Area](https://manual-en.yoyogames.com/#t=Additional_Information%2FThe_File_System.htm) and a summary is shown in IDE output:
 
 ```sh
-------------------------- 
-passed: 0 
-failed: 1 
-skipped: 0 
-crashed: 0 
-Record written to file as Olympus_records/my_suite_name.olympus.json 
-------------------------- 
+-------------------------
+passed: 0
+failed: 1
+skipped: 0
+crashed: 0
+Record written to file as Olympus_records/my_suite_name.olympus.json
+-------------------------
 ```
 
 ## Table of Contents
@@ -113,7 +114,8 @@ The test suite summary data is a GML struct with the following shape:
 
 ```jsonc
 {
-  "tallies": { //The tallies of unit tests results
+  "tallies": {
+    //The tallies of unit tests results
     "skipped": 0,
     "crashed": 0,
     "total": 1,
@@ -121,7 +123,7 @@ The test suite summary data is a GML struct with the following shape:
     "failed": 1
   },
   "name": "my_suite_name", //The suite name defined by `olympus_run(suite_name)`
-  "tests": [ 
+  "tests": [
     //Array of unit test summaries. See [Unit Test Summary](#unit-test-summary)
   ]
 }
@@ -137,14 +139,14 @@ You can set a function be executed right before a test suite starts with `olympu
 The entire suite summary is passed to the function, so you can do something like iterating through all the added tests and announcing their names:
 
 ```ts
-olympus_add_hook_before_suite_start(function(suite_summary){
-  show_debug_message("This suite contains the following tests:")
+olympus_add_hook_before_suite_start(function (suite_summary) {
+  show_debug_message("This suite contains the following tests:");
   var tests = suite_summary.tests;
-  for (var i = 0; i < array_length(tests); i++){
+  for (var i = 0; i < array_length(tests); i++) {
     var this_test = tests[i];
     show_debug_message(this_test.name);
   }
-})
+});
 ```
 
 #### On Suite Finish
@@ -154,15 +156,15 @@ You can set a function be executed after a test suite finishes with `olympus_add
 The entire suite summary is also passed to the function, so you can do something like annoucing the tallies of test results:
 
 ```ts
-olympus_add_hook_after_suite_finish(function(suite_summary){
-  show_debug_message("Test completed.")
+olympus_add_hook_after_suite_finish(function (suite_summary) {
+  show_debug_message("Test completed.");
   var tallies = suite_summary.tallies;
   show_debug_message("total: " + tallies.total);
   show_debug_message("skipped: " + tallies.skipped);
   show_debug_message("crashed: " + tallies.crashed);
   show_debug_message("passed: " + tallies.passed);
   show_debug_message("failed: " + tallies.failed);
-})
+});
 ```
 
 ### Unit Test Summary
@@ -171,16 +173,17 @@ The unit test summary is the elements in the suite summary struct's `tests` arra
 
 ```jsonc
 {
-  "index": 0, //The unit test's index as the nth element of the suite's `tests` array 
+  "index": 0, //The unit test's index as the nth element of the suite's `tests` array
   "name": "my unit test name", //The unit test name defined by `olympus_add_*(name)`
-  "status": "failed", //The unit test result 
+  "status": "failed", //The unit test result
   "millis": 4, //The time span of the unit test in milliseconds
-  "err": { //The error struct if unit the test did not pass
+  "err": {
+    //The error struct if unit the test did not pass
     "message": "Expected: 2. Actual: 1",
     "stacktrace": [
       "demo_olympus_quick_start:10",
       "_olympus_internal:485",
-      "_olympus_async_test_controller_Step_0:18",
+      "_olympus_async_test_controller_Step_0:18"
     ]
   }
 }
@@ -197,9 +200,9 @@ You can set a function be executed before each unit test starts with `olympus_ad
 The unit test summary is passed to the function, so you can do something like announcing the name of the unit test:
 
 ```ts
-olympus_add_hook_before_each_test_start(function(unit_summary){
-  show_debug_message("Start testing: " + unit_summary.name)
-})
+olympus_add_hook_before_each_test_start(function (unit_summary) {
+  show_debug_message("Start testing: " + unit_summary.name);
+});
 ```
 
 #### On Test Finish
@@ -209,11 +212,11 @@ You can set a function be executed after each unit test finishes with `olympus_a
 The unit test summary is also passed to the function, so you can do something like logging the error of the unit test if it did not pass:
 
 ```ts
-olympus_add_hook_after_each_test_finish(function(unit_summary){
-  if (unit_summary.status != olympus_test_status.passed){
+olympus_add_hook_after_each_test_finish(function (unit_summary) {
+  if (unit_summary.status != olympus_test_status.passed) {
     show_debug_message(unit_summary.err);
   }
-})
+});
 ```
 
 ## Async Testing
@@ -229,7 +232,7 @@ http_handle = http_get("https://google.com")
 
 ///obj_http_mediator Async HTTP Event
 if async_load[?"id"] == http_handle{
-  show_debug_message("http status is: " + string(async_load[?"http_status"]) ) 
+  show_debug_message("http status is: " + string(async_load[?"http_status"]) )
 }
 ```
 
@@ -240,10 +243,10 @@ With GML 2.3.1+, we can store script functions in variables and execute the func
 handler_function = function(the_async_load){
   show_debug_message("http status is: " + string(the_async_load[?"http_status"]) )
 }
-handler_function(async_load); 
+handler_function(async_load);
 ```
 
-This language feature allows us to flexibly define what `obj_http_mediator` does with `async_load`. We start by storing the handler function into the instance variable `handler_function`:  
+This language feature allows us to flexibly define what `obj_http_mediator` does with `async_load`. We start by storing the handler function into the instance variable `handler_function`:
 
 ```ts
 ///Pt 3
@@ -253,7 +256,7 @@ http_handle = http_get("https://google.com")
 
 ///Async HTTP Event
 if async_load[?"id"] == http_handle{
-  //Parse the async_load, such as reading async_load [? "result"]; 
+  //Parse the async_load, such as reading async_load [? "result"];
   handler_function(async_load);
 }
 ```
@@ -264,8 +267,8 @@ When we spawn `obj_http_mediator`, we can reassign the variable `handler_functio
 ///Pt 4
 with instance_create_depth(0,0,0,demo_obj_http_mediator){
   var new_handler_function = function(async_load_from_mediator){
-    show_debug_message("http status is: "+string(async_load_from_mediator[?"http_status"])) 
-  }  
+    show_debug_message("http status is: "+string(async_load_from_mediator[?"http_status"]))
+  }
   handler_function = new_handler_function;
 }
 ```
@@ -280,9 +283,9 @@ Once you set up an `obj_http_mediator` as shown above, you can test `http_get()`
 
 ```ts
 ///Pt 1
-var mediator_spawning_logic = function(){
-    return instance_create_depth(0,0,0,obj_http_mediator)
-}
+var mediator_spawning_logic = function () {
+  return instance_create_depth(0, 0, 0, obj_http_mediator);
+};
 ```
 
 2. Define your `new_handler_function` of how to handle the `async_load`. Note because Olympus packages the original `async_load` into the `argument` array, you have to retrieve it as the 0th element of the array:
@@ -297,7 +300,7 @@ var new_handler_function = function(argument){
     }
     else{
         throw("Expected 200. Got: " + string(http_status));
-    }    
+    }
 }
 ```
 
@@ -306,15 +309,20 @@ var new_handler_function = function(argument){
 ```ts
 ///Pt 3
 var options_to_register_handler_function_name = {
-  resolution_callback_name: "handler_function"
-}
+  resolution_callback_name: "handler_function",
+};
 ```
 
 4. Pass all these to `olympus_add_async_test()`:
 
 ```ts
 ///Pt 4
-olympus_add_async_test("Test Pinging Google", mediator_spawning_logic, new_handler_function, options_to_register_handler_function_name);
+olympus_add_async_test(
+  "Test Pinging Google",
+  mediator_spawning_logic,
+  new_handler_function,
+  options_to_register_handler_function_name
+);
 ```
 
 5. Wrap all of these inside the `olympus_run()` block:
@@ -336,7 +344,7 @@ olympus_run("My Suite Name", function(){
       }
       else{
           throw("Expected 200. Got: " + string(http_status));
-      }    
+      }
   }
 
   //Register the mediator object's instance variable name of the handler function
@@ -345,7 +353,7 @@ olympus_run("My Suite Name", function(){
   }
 
   //Add the test as an async test to the suite
-  olympus_add_async_test("Test Pinging Google", mediator_spawning_logic, new_handler_function, options_to_register_handler_function_name); 
+  olympus_add_async_test("Test Pinging Google", mediator_spawning_logic, new_handler_function, options_to_register_handler_function_name);
 });
 ```
 
@@ -378,7 +386,7 @@ var options_to_register_handler_function_name = {
   resolution_callback_name: "handler_function"
 }
 
-olympus_add_async_test(..., options_to_register_handler_function_name); 
+olympus_add_async_test(..., options_to_register_handler_function_name);
 ```
 
 #### Defining Through Suite Options
@@ -392,7 +400,7 @@ var options_to_register_global_handler_function_name = {
   global_resolution_callback_name: "handler_function"
 }
 
-olympus_run(..., options_to_register_global_handler_function_name); 
+olympus_run(..., options_to_register_global_handler_function_name);
 ```
 
 `global_resolution_callback_name` is set to `"callback"` by default, so if your mediator objects already use that name, you do not need to override the default.
@@ -414,7 +422,7 @@ You can just have:
 
 ```ts
 ///Async HTTP Event
-if async_load[?"id"] == http_handle{ 
+if async_load[?"id"] == http_handle{
   handler_function(async_load);
   //`handler_function` must not mutate the content of `async_load`
   olympus_test_resolve(async_load);
@@ -440,7 +448,7 @@ var options_to_enable_crash_recovery = {
   resume_previous_record: true
 }
 
-olympus_run(..., options_to_enable_crash_recovery); 
+olympus_run(..., options_to_enable_crash_recovery);
 ```
 
 ### Passing Variables Between Unit Tests
@@ -453,17 +461,17 @@ Sometimes we may want to pass shared variables between unit tests. This is doabl
 
 ```ts
 shared_variable_sum = 0;
-olympus_run("shared variables test", function(){
-  olympus_add_test("sum should be 1", function(){
-    shared_variable_sum ++;
+olympus_run("shared variables test", function () {
+  olympus_add_test("sum should be 1", function () {
+    shared_variable_sum++;
     show_debug_message(string(shared_variable_sum)); //1
   });
-  
-  olympus_add_test("sum should be 2", function(){
-    shared_variable_sum ++;
+
+  olympus_add_test("sum should be 2", function () {
+    shared_variable_sum++;
     show_debug_message(string(shared_variable_sum)); //2
-  })
-})
+  });
+});
 ```
 
 #### Custom Context
@@ -474,16 +482,20 @@ Alternatively, you can explicitly define what variables the tests should have ac
 
 ```ts
 not_explicitly_defined_variable = "goodbye";
-olympus_run("shared variables from custom context test", function(){
-  olympus_add_test("", function(){
-    show_debug_message(explicitly_shared_variable); 
-  show_debug_message(not_explicitly_defined_variable); //Variable struct.not_explicitly_defined_variable not set before reading it. 
-  });
-}, {
-  olympus_suite_options_context: {
-      explicitly_shared_variable : "hello"
+olympus_run(
+  "shared variables from custom context test",
+  function () {
+    olympus_add_test("", function () {
+      show_debug_message(explicitly_shared_variable);
+      show_debug_message(not_explicitly_defined_variable); //Variable struct.not_explicitly_defined_variable not set before reading it.
+    });
+  },
+  {
+    olympus_suite_options_context: {
+      explicitly_shared_variable: "hello",
+    },
   }
-})
+);
 ```
 
 ### Setting Up Dependency Chains
@@ -540,6 +552,7 @@ You can construct an options struct and pass to the `olympus_add*` APIs that wil
 | [olympus_test_options_context]                  | `struct`                          |         | The binding context for function_to_execute_synchronous_logic or function_to_spawn_object. The default uses the calling context. |
 | [olympus_test_options_resolution_context]       | `struct`                          |         | The binding context for function_to_execute_at_resolution. The default uses the calling context.                                 |
 | [olympus_test_options_timeout_milliseconds]     | `number`                          | 60000   | If this test is not able to resolve within this many milliseconds, the test will be failed.                                      |
+| [olympus_test_options_only]                     | `boolean`                         | `false` | Enabling this option will disable other tests that don't have this option enabled.                                               |
 
 ## Caveat
 

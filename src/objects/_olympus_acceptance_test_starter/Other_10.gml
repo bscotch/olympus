@@ -210,6 +210,39 @@ olympus_run("Olympus Acceptance Test", function(){
 		_olympus_acceptance_test_expect_eq(true, true);
 	});
 
+	global.step_counter = 0;
+	olympus_add_async_test("P_awaiter", function(){
+		var helper_instance = _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
+		return olympus_spawn_awaiter(function(){
+			global.step_counter++;
+			return helper_instance.delayed_change == "final_value";
+		}, {helper_instance:helper_instance})
+	}, function(){
+		_olympus_acceptance_test_expect_eq(3, global.step_counter, "step_counter should increased by 3 as _olympus_acceptance_test_helper_async's alarm[1] is set to resolve in 3 steps.");
+		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), true, "Helper instance should still exists");
+		instance_destroy(_olympus_acceptance_test_helper_async);
+	})
+	
+	olympus_add_async_test("P_object_absence_awaiter", function(){
+		var helper_instance = _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
+		return olympus_spawn_object_absence_awaiter(helper_instance);
+	}, function(){
+		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), false, "Helper should have been destroyed.");
+	})	
+
+	olympus_add_async_test("P_object_creation_awaiter", function(){
+		var helper_instance = _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async_different_callback_name);
+		helper_instance._object_specific_callback = function(){
+			_olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
+		}
+		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), false, "Helper instance should have not spawned yet.");
+		return olympus_spawn_object_creation_awaiter(_olympus_acceptance_test_helper_async);
+	}, function(){
+		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), true, "Helper should have been spawned.");
+		instance_destroy(_olympus_acceptance_test_helper_async);
+	})
+
+
 	olympus_add_async_test("F_last_test", function(){
 		if (global._olympus_test_manager.get_current_test()._index != (global._olympus_summary_manager.get_summary().tallies.total - 1)) {
 			show_error("This test must be the last test!", true);
