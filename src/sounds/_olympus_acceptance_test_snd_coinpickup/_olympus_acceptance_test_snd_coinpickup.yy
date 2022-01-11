@@ -1,5 +1,6 @@
 {
   "ConfigValues": {},
+  "conversionMode": 0,
   "compression": 0,
   "volume": 1.0,
   "preload": true,
@@ -11,14 +12,14 @@
     "name": "audiogroup_default",
     "path": "audiogroups/audiogroup_default",
   },
-  "soundFile": "demo_olympus_snd_coinpickup",
+  "soundFile": "_olympus_acceptance_test_snd_coinpickup",
   "duration": 0.441395,
   "parent": {
-    "name": "Demo",
-    "path": "folders/Demo.yy",
+    "name": "Olympus_acceptance_test",
+    "path": "folders/Olympus_acceptance_test.yy",
   },
   "resourceVersion": "1.0",
-  "name": "demo_olympus_snd_coinpickup",
+  "name": "_olympus_acceptance_test_snd_coinpickup",
   "tags": [],
   "resourceType": "GMSound",
 }

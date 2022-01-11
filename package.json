@@ -22,7 +22,9 @@
       {
         "repo": "git@github.com:bscotch/bscotch-pack.git",
         "names": [
-          "Olympus"
+          "Olympus",
+          "Olympus_demo",
+          "Olympus_acceptance_test"
         ],
         "branch": "develop",
         "revision": "88639a356946ee0618b2bd7428aaf55e4d5ec289"

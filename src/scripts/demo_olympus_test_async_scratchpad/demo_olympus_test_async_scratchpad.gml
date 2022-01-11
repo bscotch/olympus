@@ -13,7 +13,7 @@ function demo_olympus_test_async_scratchpad(){
 		    var _async_load = response_array[0];
 		    var http_status = _async_load[?"http_status"];
 		    if (http_status == 200){
-		        audio_play_sound(demo_olympus_snd_coinpickup, 1, false);
+		        audio_play_sound(_olympus_acceptance_test_snd_coinpickup, 1, false);
 		    }
 		    else{
 		        throw("Expected 200. Got: " + string(http_status));

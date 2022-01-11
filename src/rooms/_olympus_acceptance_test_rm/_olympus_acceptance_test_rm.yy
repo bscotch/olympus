@@ -46,8 +46,8 @@
     "PhysicsWorldPixToMetres": 0.1,
   },
   "parent": {
-    "name": "Acceptance_test",
-    "path": "folders/Acceptance_test.yy",
+    "name": "Olympus_acceptance_test",
+    "path": "folders/Olympus_acceptance_test.yy",
   },
   "resourceVersion": "1.0",
   "name": "_olympus_acceptance_test_rm",

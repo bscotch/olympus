@@ -10,4 +10,4 @@
 //demo_olympus_hooks();
 //demo_olympus_crash_recover();
 //demo_olympus_ci_setup();
-demo_olympus_test_async_awaiter();
+demo_olympus_test_async_with_awaiter();

@@ -187,10 +187,14 @@ olympus_run("Olympus Acceptance Test", function(){
 		_olympus_acceptance_test_expect_eq("WORLD", res2);
 		_olympus_acceptance_test_expect_eq(foo, "foo", "Expected to fail because foo is overwritten!");
 	}, { olympus_test_options_resolution_context: {foo: "overwritten"}});	
-	
+
 	if (os_get_config() == "Olympus_dev"){
 		_olympus_console_log("Skipping the crash case for dev config");
 	}
+	else if (os_get_config() == "Olympus_only_test"){
+		olympus_add_test("O_only_test", function(){}, {olympus_test_options_only: true})
+		olympus_add_test("O_only_test2", function(){}, {olympus_test_options_only: true})
+	}	
 	else{
 		olympus_add_async_test("C_silent_crash", function(){
 			show_debug_message("This simulates a message-less crash that termniates the runner.")
@@ -268,7 +272,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		
 		_olympus_console_log("Suite Finished");		
 		if (os_get_config() == "Olympus_bail"){			
-			//TODO: test in a separate suite when multi-suites became supported
+			//TODO: test in a separate suite when multi-suites support is added
 			var expected_status = olympus_summary_status_bailed;
 			var actual_status = summary.status;
 			_olympus_acceptance_test_expect_eq(expected_status, actual_status);
@@ -278,7 +282,7 @@ olympus_run("Olympus Acceptance Test", function(){
 			_olympus_acceptance_test_expect_eq(expected_failures, summary.tallies.failed);
 			_olympus_acceptance_test_expect_eq(expected_passes, summary.tallies.passed);
 			_olympus_acceptance_test_expect_eq(expected_skipped, summary.tallies.skipped);
-		}		
+		}
 		else{
 			var tests = olympus_get_current_test_summaries();
 			for (var i = 0; i < array_length(tests); i++){
@@ -286,8 +290,16 @@ olympus_run("Olympus Acceptance Test", function(){
 				var test_name = olympus_get_test_name(the_test);
 				var expected_result_initial = string_char_at(test_name, 1);
 				var expected_result;
-				var actual_result_string = olympus_get_test_status(the_test);
-				if (expected_result_initial != "B"){
+				var actual_result = olympus_get_test_status(the_test);
+				if (os_get_config() == "Olympus_only_test"){
+					if (expected_result_initial == "O"){
+						expected_result = olympus_test_status_passed;
+					}
+					else{
+						expected_result = olympus_test_status_skipped;
+					}
+				}
+				else if (expected_result_initial != "B"){
 					switch (expected_result_initial) {
 						case "P":
 							expected_result = olympus_test_status_passed;
@@ -304,14 +316,14 @@ olympus_run("Olympus Acceptance Test", function(){
 						default:
 							show_error("Test name initial is not expected: " + expected_result_initial, true);
 							break;
-					}
-					_olympus_acceptance_test_expect_eq(expected_result, actual_result_string, test_name);
+					}					
 				}
 				else{
-					_olympus_acceptance_test_expect_eq( actual_result_string == olympus_test_status_passed || 
-													actual_result_string == olympus_test_status_failed, 
-													true, test_name);
+					expected_result = true;
+					actual_result = actual_result == olympus_test_status_passed || 
+													actual_result == olympus_test_status_failed;
 				}
+				_olympus_acceptance_test_expect_eq(expected_result, actual_result, test_name);
 			}
 		}
 		show_message("Acceptance test passed!");

@@ -20,16 +20,15 @@
   "eventList": [
     {"isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMEvent",},
     {"isDnD":false,"eventNum":0,"eventType":2,"collisionObjectId":null,"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMEvent",},
-    {"isDnD":false,"eventNum":1,"eventType":2,"collisionObjectId":null,"resourceVersion":"1.0","name":"","tags":[],"resourceType":"GMEvent",},
   ],
   "properties": [],
   "overriddenProperties": [],
   "parent": {
-    "name": "Olympus_acceptance_test",
-    "path": "folders/Olympus_acceptance_test.yy",
+    "name": "acceptance_test",
+    "path": "folders/acceptance_test.yy",
   },
   "resourceVersion": "1.0",
-  "name": "_olympus_acceptance_test_helper_async",
+  "name": "o_grc_helper_async_reject",
   "tags": [],
   "resourceType": "GMObject",
 }

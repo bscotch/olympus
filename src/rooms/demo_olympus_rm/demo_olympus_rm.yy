@@ -42,8 +42,8 @@
     "PhysicsWorldPixToMetres": 0.1,
   },
   "parent": {
-    "name": "Demo",
-    "path": "folders/Demo.yy",
+    "name": "Olympus_demo",
+    "path": "folders/Olympus_demo.yy",
   },
   "resourceVersion": "1.0",
   "name": "demo_olympus_rm",
