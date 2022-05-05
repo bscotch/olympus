@@ -975,7 +975,7 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 					break;
 			}
 		}
-		return array_clone(failed_or_crashed_tests);
+		return failed_or_crashed_tests;
 	}
 
 	_get_prettified_summary = function(){

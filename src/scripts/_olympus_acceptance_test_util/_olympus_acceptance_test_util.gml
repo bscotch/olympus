@@ -1,15 +1,14 @@
 ///@description Expects that the actual value is equal to the expected value
-///@param {*} expected
-///@param {*} actual
-///@param {String} [additional_message]
-function _olympus_acceptance_test_expect_eq(expected, actual) {
-	var additional_message = argument_count > 2 ? argument[2] : "";
+///@param {Mixed} expected
+///@param {Mixed} actual
+///@param {string} [additional_message=""]
+function _olympus_acceptance_test_expect_eq(expected, actual, additional_message = "") {
 	_olympus_acceptance_test_throw_result(expected, actual, expected == actual, additional_message);
 }
 
 ///@description Expects that the structs to equal. Can only compare non-nested structs.
-///@param {*} expected
-///@param {*} actual
+///@param {Mixed} expected
+///@param {Mixed} actual
 ///@param {String} [additional_message]
 function _olympus_acceptance_test_expect_struct_eq(expected, actual){
 		var keys = variable_struct_get_names(expected);

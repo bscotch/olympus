@@ -251,24 +251,24 @@ function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
 
 /**
 @desc Spawn an awaiter object that wait for the creation of a target object. If the target is created, the awaiter is destroyed, and the target's instance ID is returned. 
-@param {object}	object_to_wait The target object to wait for
+@param {Resource.GMObject}	_object_to_wait The target object to wait for
 */
-function olympus_spawn_object_creation_awaiter(object_to_wait){
-	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: object_to_wait});
+function olympus_spawn_object_creation_awaiter(_object_to_wait){
+	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 
 /**
 @desc Spawn an awaiter object that wait for the absence of a target object. If the target no longer exists, the awaiter is destroyed. 
-@param {object}	object_to_wait The object to wait for
+@param {Resource.GMObject}	_object_to_wait The object to wait for
 */
-function olympus_spawn_object_absence_awaiter(object_to_wait){
-	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: object_to_wait});
+function olympus_spawn_object_absence_awaiter(_object_to_wait){
+	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 
 /**
 @desc Spawn an awaiter object that evaluate the return of a function at every step. When the function evaluates true, the awaiter is destroyed.
 @param {function} function_to_wait_for The function to evaluate.
-@param {struct} [context] The binding context for function_to_wait_for. The default uses the calling context. 
+@param {Struct} [context = self] The binding context for function_to_wait_for. The default uses the calling context. 
 */
 function olympus_spawn_awaiter(function_to_wait_for, context = self){
 	function_to_wait_for = method(context, function_to_wait_for);
