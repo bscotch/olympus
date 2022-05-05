@@ -120,7 +120,7 @@ function _olympus_get_callback_handle(callback_struct_variable_name){
 
 #endregion
 
-///@arg {string} message
+///@arg {string} error_message
 ///@arg {olympus_error_code} error_code
 ///@arg {struct} [info] Any additional information that is packaged in a struct
 ///@arg {string[]} [stacktrace]
@@ -129,12 +129,12 @@ function _Olympus_Test_Error(error_message, error_code) constructor{
 	code  = error_code;	
 	if (argument_count > 2) {
 		if (!is_undefined(argument[2])){
-			variable_instance_set(self, "info", argument[2]);
+			variable_struct_set(self, "info", argument[2]);
 		}
 	}	
 	if (argument_count > 3) {
 		if (!is_undefined(argument[3])){
-			variable_instance_set(self, "stacktrace", argument[3]);
+			variable_struct_set(self, "stacktrace", argument[3]);
 		}
 	}
 }
