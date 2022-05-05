@@ -251,7 +251,7 @@ function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
 
 /**
 @desc Spawn an awaiter object that wait for the creation of a target object. If the target is created, the awaiter is destroyed, and the target's instance ID is returned. 
-@param {Resource.GMObject}	_object_to_wait The target object to wait for
+@param {Id.Instance | Resource.GMObject}	_object_to_wait The target object to wait for
 */
 function olympus_spawn_object_creation_awaiter(_object_to_wait){
 	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
@@ -259,7 +259,7 @@ function olympus_spawn_object_creation_awaiter(_object_to_wait){
 
 /**
 @desc Spawn an awaiter object that wait for the absence of a target object. If the target no longer exists, the awaiter is destroyed. 
-@param {Resource.GMObject}	_object_to_wait The object to wait for
+@param {Id.Instance | Resource.GMObject}	_object_to_wait The object to wait for
 */
 function olympus_spawn_object_absence_awaiter(_object_to_wait){
 	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});

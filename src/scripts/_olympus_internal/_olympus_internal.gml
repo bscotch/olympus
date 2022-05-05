@@ -123,7 +123,7 @@ function _olympus_get_callback_handle(callback_struct_variable_name){
 ///@arg {string} error_message
 ///@arg {olympus_error_code} error_code
 ///@arg {struct} [info] Any additional information that is packaged in a struct
-///@arg {string[]} [stacktrace]
+///@arg {Array<String>} [stacktrace]
 function _Olympus_Test_Error(error_message, error_code) constructor{
 	message = error_message;
 	code  = error_code;	
@@ -387,15 +387,17 @@ function _Olympus_Test(name, fn) constructor {
 	_resolution_callback_name = is_string(resolution_callback_name) ? resolution_callback_name : "";
 	_rejection_callback_name = is_string(rejection_callback_name) ?  rejection_callback_name : "";
 	timeout = is_numeric(timeout_millis)? timeout_millis : global._olympus_test_manager._default_timeout;
-	_start_time = undefined;
+	_start_time = current_time;
 	_completion_time = undefined;
 	_user_feedback_prompt = argument_count > 3 ? argument[3] : noone;	
 	_user_feedback_required = _user_feedback_prompt != noone;
 	_mediator_id = -1;
+	//Feather ignore GM9999 Need to be able to assert array content type
 	_dependencies = [];
 	
 	_get_non_passing_dependency_names = function(){
 		var non_passing_dependency_names = [];
+		//Feather ignore GM1041 Need to detect variables from enclosing context
 		for (var i = 0; i < array_length(_dependencies); i++){
 			var dependency_test = _dependencies[i];
 			if (dependency_test.status != olympus_test_status_passed){
@@ -503,15 +505,19 @@ function _Olympus_Test(name, fn) constructor {
 
 	_update_err_for_disabling_reasons = function(){
 		if (disabled){
+			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped by xolympus_add_*", olympus_error_code.skip_with_x);
 		}		
 		else if (global._olympus_test_manager._bail_on_fail_or_crash && global._olympus_summary_manager.has_failure_or_crash()){
+			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped because of bail", olympus_error_code.skip_with_bail);
 		}
 		else if	(_user_feedback_required & global._olympus_test_manager._skip_user_feedback_tests){
+			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped because user feedback is suppressed", olympus_error_code.skip_with_suppress);
 		}
 		else if (array_length(_get_non_passing_dependency_names()) > 0){
+			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped because dependency did not pass", olympus_error_code.skip_with_dependency, _get_non_passing_dependency_names());
 		}		
 	}	
@@ -521,9 +527,11 @@ function _Olympus_Test(name, fn) constructor {
 			_attach_callback_to_mediator();
 		}
 		else{
-			_test_fn(); 
-			if  ((current_time - _start_time) > timeout) {
-				reject( new _Olympus_Test_Error("Sync Test Exceeded Timeout: " + string(timeout)), olympus_error_code.timeout);
+			_test_fn();
+			//Feather ignore GM1010 Need to detect variables from enclosing context or this is a bug		
+			if  ((current_time - _start_time) > timeout) {				
+				//Feather ignore GM1041 need to support type narrowing of enums
+				reject( new _Olympus_Test_Error("Sync Test Exceeded Timeout: " + string(timeout), olympus_error_code.timeout), olympus_error_code.timeout);
 			}
 			else{
 				resolve();
@@ -552,7 +560,8 @@ function _Olympus_Test(name, fn) constructor {
 					var code = olympus_error_code.failed_sync;
 					if (_is_async){
 						code = olympus_error_code.failed_async_mediator_spawning;
-					}				
+					}
+					//Feather ignore GM1041 need to support type narrowing of enums
 					reject(err, code);
 				}
 			}
@@ -597,29 +606,31 @@ function _Olympus_Test(name, fn) constructor {
 	}
 
 	_set_completion_time = function(){
-		var test_finish_time = current_time;
-		var test_duration = test_finish_time - _start_time;
+		//Feather ignore GM1010 Need to detect variables from enclosing context
+		var test_duration = current_time - _start_time;
 		_completion_time = test_duration;
 		_counting_time_out = false;
 	}
 
 	/// @desc By default, log the result as failure. If _allow_uncaught, throw the error instead
-	/// @param {Error} err Error that caused the test to fail
-	/// @param {olympus_error_code} [code]
-	reject = function(err){
+	/// @param {Struct.Exception} err Error that caused the test to fail
+	/// @param {olympus_error_code} [code = olympus_error_code.user_defined] olympus_error_code enums
+	reject = function(err, code = olympus_error_code.user_defined){
 			if (global._olympus_test_manager._allow_uncaught){
 				throw(err);
 			}
 			else{
-				var code = argument_count > 1 ? argument[1] : olympus_error_code.user_defined;
 				status = olympus_test_status_failed;			
-				err = _convert_user_error_to_olympus_error(err, code);
-				_olympus_console_log(err.message);
-				_err = err;
+				//Feather ignore GM1041 need to support type narrowing of enums
+				var olympus_err = _convert_user_error_to_olympus_error(err, code);
+				_olympus_console_log(olympus_err.message);
+				_err = olympus_err;
 				_done();
 			}
 	}
 	
+	/// @param {Struct.Exception | Mixed} err Error that caused the test to fail
+	/// @param {olympus_error_code} code olympus_error_code enums
 	_convert_user_error_to_olympus_error = function(err, code) {
 		if (is_struct(err)){
 			err = json_parse(json_stringify(err));
@@ -656,7 +667,8 @@ function _Olympus_Test(name, fn) constructor {
 	}
 	
 	///@description Logs the status for the test to the console
-	_log_status = function(){
+	_log_status = function(){		
+		//Feather ignore GM1010 Need to detect variables from enclosing context
 		_olympus_console_log("[" + status + "] " + _name);
 	}
 
@@ -855,6 +867,7 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 					var crashed_test = _summary.tests[_summary.progress.last_test_index];
 					if  (crashed_test[$ "status"] != olympus_test_status_crashed) {
 						_olympus_console_log("Last run had a crash with uncaught exception.");
+						//Feather ignore GM1041 need to support type narrowing of enums
 						var err = new _Olympus_Test_Error("Uncaught crash", olympus_error_code.uncaught_crash);
 						update_tests_crashed(err);
 					}
@@ -895,6 +908,7 @@ function _Olympus_Summary_Manager(suite_name) constructor{
 			file_text_close(fh);
 
 			if (os_type == os_switch){
+				//Feather ignore GM1013 Need to support console specific functions
 				switch_save_data_commit();
 			}
 		}

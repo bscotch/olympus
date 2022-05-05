@@ -1,7 +1,7 @@
 ///@description Expects that the actual value is equal to the expected value
 ///@param {Mixed} expected
 ///@param {Mixed} actual
-///@param {string} [additional_message=""]
+///@param {String} [additional_message=""]
 function _olympus_acceptance_test_expect_eq(expected, actual, additional_message = "") {
 	_olympus_acceptance_test_throw_result(expected, actual, expected == actual, additional_message);
 }
@@ -17,6 +17,7 @@ function _olympus_acceptance_test_expect_struct_eq(expected, actual){
 			var expected_value = expected[$ key];
 			var actual_value = actual[$ key];
 			if (is_string(expected_value) || is_numeric(expected_value) || is_bool(expected_value)){
+				// Feather ignore GM1041 Need to detect the types inside the array
 				_olympus_acceptance_test_expect_eq(expected_value, actual_value, key);
 			}
 			else{

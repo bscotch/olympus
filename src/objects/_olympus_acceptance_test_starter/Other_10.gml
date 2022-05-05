@@ -38,7 +38,8 @@ olympus_run("Olympus Acceptance Test", function(){
 	olympus_add_test("P_inhertied_context_test", function(){
 		if (global._olympus_test_manager.get_current_test()._index != 1) {
 			show_error("This test must be the 1st test!", true);
-		}				
+		}
+		//Feather ignore GM1013 need to detect declared variables in the enclosing context
 		_olympus_acceptance_test_expect_eq(foo, "foo", "foo is declared in the test registration context and should be avaialble to the test");
 		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_starter), false, "_olympus_acceptance_test_test_starter should be destroyed by this point");
 		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable", "But its instance variable test_starter_instance_variable should still be available"); 
@@ -48,6 +49,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		if (global._olympus_test_manager.get_current_test()._index != 2) {
 			show_error("This test must be the 2nd test!", true);
 		}				
+		//Feather ignore GM1013 need to detect declared variables in the custom context
 		_olympus_acceptance_test_expect_eq(foo, "overwritten", "Foo is overwritten by the custom context.");
 		_olympus_acceptance_test_expect_eq(bar, "bar", "Bar is provided by the custom context.");
 	}, {olympus_test_options_context: {bar: "bar", foo: "overwritten"}});
@@ -159,6 +161,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async_different_callback_name)
 	}, function(){
 		show_debug_message("Inhertied context should also be available for the resolution function");
+		//Feather ignore GM1013 Need to be detect binding of custom context
 		_olympus_acceptance_test_expect_eq(foo, "foo");
 		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
 	}, {olympus_test_options_resolution_callback_name: "_object_specific_callback"});	
@@ -166,7 +169,8 @@ olympus_run("Olympus Acceptance Test", function(){
 	olympus_add_async_test("P_inhertied_context_test_for_resolution", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
 	}, function(){
-		show_debug_message("Inhertied context should also be available for the resolution function");
+		show_debug_message("Inhertied context should also be available for the resolution function");		
+		//Feather ignore GM1013 Need to be detect binding of custom context
 		_olympus_acceptance_test_expect_eq(foo, "foo");
 		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
 	});
@@ -184,7 +188,8 @@ olympus_run("Olympus Acceptance Test", function(){
 		var res = response_array[0];
 		var res2 = response_array[1];
 		_olympus_acceptance_test_expect_eq("HELLO", res);
-		_olympus_acceptance_test_expect_eq("WORLD", res2);
+		_olympus_acceptance_test_expect_eq("WORLD", res2);		
+		//Feather ignore GM1013 Need to be detect binding of custom context
 		_olympus_acceptance_test_expect_eq(foo, "foo", "Expected to fail because foo is overwritten!");
 	}, { olympus_test_options_resolution_context: {foo: "overwritten"}});	
 
@@ -219,6 +224,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		var helper_instance = _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
 		return olympus_spawn_awaiter(function(){
 			global.step_counter++;
+			//Feather ignore GM1013 Need to be detect binding of custom context
 			return helper_instance.delayed_change == "final_value";
 		}, {helper_instance:helper_instance})
 	}, function(){
@@ -229,6 +235,7 @@ olympus_run("Olympus Acceptance Test", function(){
 	
 	olympus_add_async_test("P_object_absence_awaiter", function(){
 		var helper_instance = _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
+		//Feather ignore GM1041 Need to support multiple types
 		return olympus_spawn_object_absence_awaiter(helper_instance);
 	}, function(){
 		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), false, "Helper should have been destroyed.");
@@ -240,6 +247,7 @@ olympus_run("Olympus Acceptance Test", function(){
 			_olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
 		}
 		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), false, "Helper instance should have not spawned yet.");
+		//Feather ignore GM1041 Need to support multiple types
 		return olympus_spawn_object_creation_awaiter(_olympus_acceptance_test_helper_async);
 	}, function(){
 		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_helper_async), true, "Helper should have been spawned.");
@@ -255,6 +263,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async_different_callback_name);
 	}, function(){
 		show_debug_message("Inhertied context should also be available for the resolution function");
+		//Feather ignore GM1013 need to detect declared variables in the enclosing context
 		_olympus_acceptance_test_expect_eq(foo, "foo");
 		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
 	}, {
