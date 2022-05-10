@@ -50,8 +50,8 @@ function _olympus_create_test_controller(){
 
 ///@description Set up the requirement for the hook
 ///@arg {Function} fn
-///@arg {Struct} [context]
-function _olympus_hook_set_up(fn, context) {
+///@arg {Struct} [context = self]
+function _olympus_hook_set_up(fn, context = self) {
 	_olympus_forbid_adding_outside_suite();
 	_olympus_forbid_change_during_testing();
 	if (!is_method(fn))
@@ -59,13 +59,13 @@ function _olympus_hook_set_up(fn, context) {
 	else{
 		_olympus_create_test_controller();
 		var binded_function = method(context, fn);
-		return binded_function
+		return binded_function;
 	}	
 }
 
 #macro _olympus_forbid_change_during_testing_err "Cannot make changes while the test suite is running!"
 function _olympus_forbid_change_during_testing(){
-	if (variable_global_exists("_olympus_test_manager") && is_struct(global._olympus_test_manager) && global._olympus_test_manager[$"_startTime"]){
+	if (variable_global_exists("_olympus_test_manager") && is_struct(global._olympus_test_manager) && global._olympus_test_manager._startTime){
 		throw(_olympus_forbid_change_during_testing_err);
 	}	
 }
@@ -111,8 +111,10 @@ function _olympus_get_callback_handle(callback_struct_variable_name){
 	var callback_handle = function(){_olympus_console_log("The suite already completed")};
 	if (variable_global_exists("_olympus_test_manager") && is_struct(global._olympus_test_manager)){
 		var current_test = global._olympus_test_manager.get_current_test();
+		/// Feather ignore GM1028 Need to assert Mixed type or allow arbitary key
 		var callback_name = current_test[$ callback_struct_variable_name];
-		var mediator_id = global._olympus_test_manager.get_current_test()._mediator_id; 
+		var mediator_id = global._olympus_test_manager.get_current_test()._mediator_id;	
+		/// Feather ignore GM1041 Need to assert variable type when the user knows it
 		var callback_handle = (mediator_id == id) ? variable_instance_get(id, callback_name) : function(){_olympus_console_log("This mediator already timed out:", object_get_name(object_index), id)};
 	}
 	return callback_handle;
@@ -240,6 +242,7 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 		
 		if (!_allow_uncaught){
 			exception_unhandled_handler(function(ex){
+				//Feather ignore GM1041 need to support type narrowing of enums
 				var olympus_error = new _Olympus_Test_Error("Unhandled exception", olympus_error_code.unhandled_exception, ex);
 				global._olympus_summary_manager.update_tests_crashed(olympus_error);
 				global._olympus_summary_manager.write_summary_to_file();
@@ -253,7 +256,7 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 
 	///@description Execute the n-th test struct
 	///@param {Integer} [test_index]
-	execute = function (test_index) {
+	execute = function (test_index=undefined) {
 		if (is_undefined(test_index)){
 			// We are starting from the beginning
 			if (is_method(_function_to_call_on_suite_start)){
@@ -292,15 +295,18 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 		with _olympus_async_test_controller{
 			instance_destroy();
 		}
+		//Feather ignore GM1052
 		delete global._olympus_summary_manager;
 		delete global._olympus_test_manager;
 	}	
 	
 	///@description Once all tests have passed, failed, or timed out, call this function.
 	_conclude_tests = function(status) {
+		//Feather ignore GM1010 need to be able to assert variable types
 		_completion_time = current_time - _startTime;
 		global._olympus_summary_manager.complete(status);
 		if (!_allow_uncaught){
+			//Feather ignore GM1041 Need to update the function signature of exception_unhandled_handler()
 			exception_unhandled_handler(undefined);	//Restore the exception handler to default state.
 		}
 		if (is_method(_function_to_call_on_suite_finish)){
@@ -309,8 +315,8 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 		_clean_up();
 	}
 	
-	///@description Adds a test to this manager and return the test index
-	///@param {Struct} test
+	/// @description Adds a test to this manager and return the test index
+	/// @param {Struct._Olympus_Test} test
 	add_test = function(test){
 		var test_name = test._name;
 		if (test._only) {
@@ -438,7 +444,8 @@ function _Olympus_Test(name, fn) constructor {
 	}
 
 	_create_resolution_callback = function(){	
-		return method(self, function(){			
+		return method(self, function(){
+			//Feather ignore GM1013 Need to detect variables from enclosing context
 			if (status == olympus_test_status_running){
 				var _param_array = [];
 				for (var i = 0; i < argument_count; i ++){
@@ -465,6 +472,7 @@ function _Olympus_Test(name, fn) constructor {
 
 	///@desc Displays the user feedback prompt, and returns the async handle
 	_get_user_feedback_async = function(){
+		//Feather ignore GM1010 need to be able to assert types
 		var prompt =  _user_feedback_prompt  + " (Type 'Pass' and hit 'OK' to pass, or enter your own message and hit 'OK' to fail the test. 'Cancel' will always fail the test.)"
 		var user_feedback_handle = get_string_async(prompt, _olympus_user_feedback_confirm_message);
 		return user_feedback_handle;
@@ -512,7 +520,7 @@ function _Olympus_Test(name, fn) constructor {
 			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped because of bail", olympus_error_code.skip_with_bail);
 		}
-		else if	(_user_feedback_required & global._olympus_test_manager._skip_user_feedback_tests){
+		else if	(_user_feedback_required && global._olympus_test_manager._skip_user_feedback_tests){
 			//Feather ignore GM1041 need to support type narrowing of enums
 			_err = new _Olympus_Test_Error("Skipped because user feedback is suppressed", olympus_error_code.skip_with_suppress);
 		}

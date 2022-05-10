@@ -144,7 +144,7 @@ function xolympus_add_async_test_with_user_feedback(name){
 /**
 @desc Set a function to be excuted before each test starts. The test summary struct is passed to this function as the first argument.
 @param {function} function_to_execute The function to execute
-@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+@param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
 function olympus_add_hook_before_each_test_start(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
@@ -154,7 +154,7 @@ function olympus_add_hook_before_each_test_start(function_to_execute){
 /** 
 @desc Set a function to be excuted after each test finishes. The test summary struct is passed to this function as the first argument.
 @param {function} function_to_execute The function to execute
-@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+@param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
 function olympus_add_hook_after_each_test_finish(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
@@ -163,8 +163,8 @@ function olympus_add_hook_after_each_test_finish(function_to_execute){
 
 /**
 @desc Set a function to be excuted before the suite starts. The suite summary struct is passed to this function as the first argument.
-@param {function} function_to_execute The function to execute
-@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+@param {Function} function_to_execute The function to execute
+@param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
 function olympus_add_hook_before_suite_start(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
@@ -174,7 +174,7 @@ function olympus_add_hook_before_suite_start(function_to_execute){
 /** 
 @desc Set a function to be excuted after the suite finishes. The suite summary struct is passed to this function as the first argument.
 @param {function} function_to_execute The function to execute
-@param {struct | instance_id } [context] The optional context to bind the function to. The default uses the calling context.
+@param {Struct } [context] The optional context to bind the function to. The default uses the calling context.
  */
 function olympus_add_hook_after_suite_finish(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
@@ -254,6 +254,8 @@ function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
 @param {Id.Instance | Resource.GMObject}	_object_to_wait The target object to wait for
 */
 function olympus_spawn_object_creation_awaiter(_object_to_wait){
+	//Feather ignore GM1013 Need to detect variables from enclosing context
+	//Feather ignore GM1041 Need to support multiple types
 	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 
@@ -262,6 +264,8 @@ function olympus_spawn_object_creation_awaiter(_object_to_wait){
 @param {Id.Instance | Resource.GMObject}	_object_to_wait The object to wait for
 */
 function olympus_spawn_object_absence_awaiter(_object_to_wait){
+	//Feather ignore GM1013 Need to detect variables from enclosing context
+	//Feather ignore GM1041 Need to support multiple types
 	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 

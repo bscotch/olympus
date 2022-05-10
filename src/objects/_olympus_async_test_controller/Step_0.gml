@@ -32,7 +32,7 @@ if (_suite_is_running()) {
 			global._olympus_test_manager.execute(_current_test._index+1);
 			_interval_between_tests_counter = _interval_between_tests;
 		}
-	}	
+	}
 	_interval_between_tests_counter -= 1/room_speed;
 	
 	if (_current_test.status == olympus_test_status_running){

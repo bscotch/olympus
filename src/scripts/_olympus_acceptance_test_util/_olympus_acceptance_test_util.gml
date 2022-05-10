@@ -21,7 +21,7 @@ function _olympus_acceptance_test_expect_struct_eq(expected, actual){
 				_olympus_acceptance_test_expect_eq(expected_value, actual_value, key);
 			}
 			else{
-				_olympus_console_log("Cannot compare non-string, non-boolean, non-number values: " + key);
+				_olympus_console_log("Cannot compare non-string, non-boolean, non-number values: ", key);
 			}
 		}
 }
