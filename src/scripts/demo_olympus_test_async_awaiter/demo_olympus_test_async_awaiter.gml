@@ -30,7 +30,6 @@ function demo_olympus_test_async_awaiter(){
 		olympus_add_async_test("awaiter_object_creation_test", 
 			function(){
 				instance_create_depth(0,0,0, demo_olympus_obj_delayed_object_spawner);
-				//Feather ignore GM1041 Need to support multiple types
 				var awaiter_instance = olympus_spawn_object_creation_awaiter(demo_olympus_obj_sound_renderer);			
 				return awaiter_instance;
 			}

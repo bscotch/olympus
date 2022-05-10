@@ -295,7 +295,6 @@ function _Olympus_Test_Manager(suite_name, function_to_add_tests_and_hooks, opti
 		with _olympus_async_test_controller{
 			instance_destroy();
 		}
-		//Feather ignore GM1052
 		delete global._olympus_summary_manager;
 		delete global._olympus_test_manager;
 	}	
@@ -398,7 +397,6 @@ function _Olympus_Test(name, fn) constructor {
 	_user_feedback_prompt = argument_count > 3 ? argument[3] : noone;	
 	_user_feedback_required = _user_feedback_prompt != noone;
 	_mediator_id = -1;
-	//Feather ignore GM9999 Need to be able to assert array content type
 	_dependencies = [];
 	
 	_get_non_passing_dependency_names = function(){

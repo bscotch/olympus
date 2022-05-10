@@ -1,6 +1,5 @@
 if  (async_load[?"id"] == _user_feedback_handle)
 {	
-	// Feather ignore GM1010
     if (async_load[?"status"])
         {
 			var _user_input = async_load[?"result"];

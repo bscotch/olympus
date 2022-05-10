@@ -10,7 +10,6 @@ function demo_olympus_test_async_scratchpad(){
 
 		//Define your callback_to_inject
 		var callback_to_inject = function(response_array){
-			//Feather ignore GM1013 Need to be detect binding of enclosing context
 			show_debug_message(out_side_context);
 		    var _async_load = response_array[0];
 		    var http_status = _async_load[?"http_status"];
