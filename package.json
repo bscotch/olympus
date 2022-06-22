@@ -26,8 +26,8 @@
           "Olympus_demo",
           "Olympus_acceptance_test"
         ],
-        "branch": "develop",
-        "revision": "88639a356946ee0618b2bd7428aaf55e4d5ec289"
+        "branch": "feat/olympus_multi_suite",
+        "revision": "792dffea9191f57a5d51059d13eb124815cbfa57"
       }
     ]
   },

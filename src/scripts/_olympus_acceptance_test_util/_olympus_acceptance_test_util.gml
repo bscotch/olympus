@@ -1,3 +1,10 @@
+///@description Expects that the evaluation to be true
+///@param {Mixed} evaluation
+///@param {String} [additional_message=""]
+function _olympus_acceptance_test_expect(evaluation, additional_message = "") {
+	_olympus_acceptance_test_throw_result(true, evaluation, evaluation == true, additional_message);
+}
+
 ///@description Expects that the actual value is equal to the expected value
 ///@param {Mixed} expected
 ///@param {Mixed} actual

@@ -1,6 +1,6 @@
 function demo_olympus_test_async_with_user_feedback(){	
 	//Name your test suite
-	olympus_run("Async test with user feedback", function(){
+	olympus_run("async_with_user_feedback", function(){
 		//Name your unit test and add it to the suite as an async unit test with user feedback
 		olympus_add_async_test_with_user_feedback("Test sound rendering", 
 			//Define the instruction to the user

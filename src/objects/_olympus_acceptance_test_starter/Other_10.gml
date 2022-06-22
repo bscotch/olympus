@@ -1,61 +1,46 @@
 /// @desc This is the self test to ensure that Olympus is managing test units correctly. 
 /// The test is run with the Olympus_acceptance_test config, and should need to reboot 1 time to complete	
-olympus_run("Olympus Acceptance Test", function(){
-
+var olympus_register_acceptance_tests = function(){	
 	
-	olympus_add_test("P_Forbid_change_during_test", function(){
-		if (global._olympus_test_manager.get_current_test()._index != 0) {
+	_olympus_context_verification = function(){
+		_olympus_acceptance_test_expect_eq(foo, "foo", "foo is declared in the test registration context and should be avaialble to the test");
+		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable", "instance variable test_starter_instance_variable should still be available");
+		var expected_instance_var = "test_starter_instance_variable_to_be_replaced_by_custom_context";
+		if (suite_config == "default") {
+			expected_instance_var = "replaced";
+		}
+		_olympus_acceptance_test_expect_eq(test_starter_instance_variable_to_be_replaced_by_custom_context, expected_instance_var, "And custom context can override original context.");		
+	}
+	
+	olympus_add_test("P_current_index_test", function(){
+		if (_olympus_suite_ref.get_current_test()._index != 0) {
 			show_error("This test must be the 0th test!", true);
 		}		
-		try {
-			olympus_add_test("attempting to add a test during an on-going test", function(){});
-			show_error("This should not execute as the prior statement should have thrown an error", true);
-		}
-		catch(err){
-			_olympus_acceptance_test_expect_eq(err, _olympus_forbid_change_during_testing_err);
-		}		
-				
-		try {
-			olympus_run("attempting to run a test during an on-going test", function(){});
-			show_error("This should not execute as the prior statement should have thrown an error", true);
-		}
-		catch(err){
-			_olympus_acceptance_test_expect_eq(err, _olympus_forbid_change_during_testing_err);
-		}
-		
-		try {
-			olympus_add_hook_before_suite_start( function() {
-				show_debug_message("attempting to set a hook during an on-going test");
-			})
-			show_error("This should not execute as the prior statement should have thrown an error", true);
-		}
-		catch(err){
-			_olympus_acceptance_test_expect_eq(err, _olympus_forbid_change_during_testing_err);
-		}
 	});
 	
 	foo = "foo";
 	olympus_add_test("P_inhertied_context_test", function(){
-		if (global._olympus_test_manager.get_current_test()._index != 1) {
+		if (_olympus_suite_ref.get_current_test()._index != 1) {
 			show_error("This test must be the 1st test!", true);
 		}
 		//Feather ignore GM1013 need to detect declared variables in the enclosing context
-		_olympus_acceptance_test_expect_eq(foo, "foo", "foo is declared in the test registration context and should be avaialble to the test");
 		_olympus_acceptance_test_expect_eq(instance_exists(_olympus_acceptance_test_starter), false, "_olympus_acceptance_test_test_starter should be destroyed by this point");
-		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable", "But its instance variable test_starter_instance_variable should still be available"); 
+		_olympus_context_verification()
 	});
-
+	
 	olympus_add_test("P_custom_context_test", function(){
-		if (global._olympus_test_manager.get_current_test()._index != 2) {
+		if (_olympus_suite_ref.get_current_test()._index != 2) {
 			show_error("This test must be the 2nd test!", true);
 		}				
 		//Feather ignore GM1013 need to detect declared variables in the custom context
 		_olympus_acceptance_test_expect_eq(foo, "overwritten", "Foo is overwritten by the custom context.");
 		_olympus_acceptance_test_expect_eq(bar, "bar", "Bar is provided by the custom context.");
-	}, {olympus_test_options_context: {bar: "bar", foo: "overwritten"}});
+		_olympus_context_verification();		
+		_olympus_acceptance_test_expect_eq(test_starter_instance_variable_to_be_replaced_by_custom_context, "replaced_by_test_option_context", "Should use the locally defined context.");
+	}, {olympus_test_options_context: {bar: "bar", foo: "overwritten", _olympus_suite_ref: _olympus_suite_ref, test_starter_instance_variable_to_be_replaced_by_custom_context: "replaced_by_test_option_context"}});
 
 	olympus_add_async_test("F_Time_out", function(){
-		if (global._olympus_test_manager.get_current_test()._index != 3) {
+		if (_olympus_suite_ref.get_current_test()._index != 3) {
 			show_error("This test must be the 3rd test!", true);
 		}				
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
@@ -70,7 +55,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		user_feedback_test_name = "S_User_feedback_test"
 	}
 	olympus_add_async_test_with_user_feedback(user_feedback_test_name, "pass this user feedback test?", function(){
-		if (global._olympus_test_manager.get_current_test()._index != 4) {
+		if (_olympus_suite_ref.get_current_test()._index != 4) {
 			show_error("This test must be the 4th test!", true);
 		}				
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
@@ -107,6 +92,25 @@ olympus_run("Olympus Acceptance Test", function(){
 	catch(err){
 		_olympus_acceptance_test_expect_eq(err.name, non_unique_name);
 	}	
+	
+	
+	interval_test_starting_time = 0;
+	#macro _olympus_acceptance_test_interval_elongated 1000
+	olympus_add_async_test("P_Default_test_interval_setup", function(){
+		olympus_set_interval_millis_between_tests(_olympus_acceptance_test_interval_elongated);
+		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async);
+	}, function(){
+		interval_test_starting_time = current_time;
+	}, {olympus_test_options_timeout_millis: _olympus_acceptance_test_interval_elongated * 2})
+	
+	olympus_add_test("P_Default_test_interval_check", function(){
+		var interval_has_been_waited = (current_time - interval_test_starting_time) > _olympus_acceptance_test_interval_elongated;
+		_olympus_console_log("current_time:" , current_time)
+		_olympus_console_log("interval_test_starting_time", interval_test_starting_time)
+		_olympus_acceptance_test_expect(interval_has_been_waited, "The current time should be at least 1 second later than the starting time");
+		olympus_set_interval_millis_between_tests();
+	})
+
 
 	var dependency_name = "P_dependee";
 	var depender_name = "P_depender";
@@ -160,20 +164,25 @@ olympus_run("Olympus Acceptance Test", function(){
 	olympus_add_async_test("P_overwriting_resolution_callback_name", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async_different_callback_name)
 	}, function(){
-		show_debug_message("Inhertied context should also be available for the resolution function");
-		//Feather ignore GM1013 Need to be detect binding of custom context
-		_olympus_acceptance_test_expect_eq(foo, "foo");
-		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
+		show_debug_message("Changing the resolution callback name should still pass the test.");	
 	}, {olympus_test_options_resolution_callback_name: "_object_specific_callback"});	
 
 	olympus_add_async_test("P_inhertied_context_test_for_resolution", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
 	}, function(){
-		show_debug_message("Inhertied context should also be available for the resolution function");		
-		//Feather ignore GM1013 Need to be detect binding of custom context
-		_olympus_acceptance_test_expect_eq(foo, "foo");
-		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
+		show_debug_message("Inhertied context should also be available for the resolution function");	
+		_olympus_context_verification();		
 	});
+
+	olympus_add_async_test("P_resolution_context_overwrite", function(){
+		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
+	}, function(){
+		show_debug_message("Resolution context should be overwritable.");	
+		_olympus_context_verification();
+		_olympus_acceptance_test_expect_eq(test_starter_instance_variable_to_be_replaced_by_custom_context, "replaced_by_test_option_context", "Should use the locally defined context.");
+	}, {olympus_test_options_resolution_context: {
+		test_starter_instance_variable_to_be_replaced_by_custom_context: "replaced_by_test_option_context" 
+	}});
 
 	olympus_add_async_test("F_async_resolution_and_parameter", function(){
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async)
@@ -196,16 +205,17 @@ olympus_run("Olympus Acceptance Test", function(){
 	if (os_get_config() == "Olympus_dev"){
 		_olympus_console_log("Skipping the crash case for dev config");
 	}
-	else if (os_get_config() == "Olympus_only_test"){
-		olympus_add_test("O_only_test", function(){}, {olympus_test_options_only: true})
-		olympus_add_test("O_only_test2", function(){}, {olympus_test_options_only: true})
-	}	
 	else{
 		olympus_add_async_test("C_silent_crash", function(){
 			show_debug_message("This simulates a message-less crash that termniates the runner.")
 			game_end(); 
 		});
 	}
+
+	if (suite_config == "Olympus_only_test"){
+		olympus_add_test("O_only_test", function(){}, {olympus_test_options_only: true})
+		olympus_add_test("O_only_test2", function(){}, {olympus_test_options_only: true})
+	}	
 
 	olympus_add_test("F_post_crash", function(){
 		_olympus_acceptance_test_expect_eq(3, 4, "Comparing 3 to 4");
@@ -256,20 +266,17 @@ olympus_run("Olympus Acceptance Test", function(){
 
 
 	olympus_add_async_test("F_last_test", function(){
-		if (global._olympus_test_manager.get_current_test()._index != (global._olympus_summary_manager.get_summary().tallies.total - 1)) {
+		if (_olympus_suite_ref.get_current_test()._index != (_olympus_suite_ref._my_summary_manager_ref.get_summary().tallies.total - 1)) {
 			show_error("This test must be the last test!", true);
 		}
 		show_debug_message("Testing whether a mediator object that calls resolve function after the suites ends will cause a crash.");
 		return _olympus_acceptance_test_instance_create(_olympus_acceptance_test_helper_async_different_callback_name);
 	}, function(){
-		show_debug_message("Inhertied context should also be available for the resolution function");
-		//Feather ignore GM1013 need to detect declared variables in the enclosing context
-		_olympus_acceptance_test_expect_eq(foo, "foo");
-		_olympus_acceptance_test_expect_eq(test_starter_instance_variable, "test_starter_instance_variable"); 		
+		_olympus_context_verification();	
 	}, {
 		olympus_test_options_resolution_callback_name: "_object_specific_callback",
-		olympus_test_options_timeout_millis: 1
-		});	
+		olympus_test_options_timeout_millis: 1		
+	});	
 
 	olympus_add_hook_before_suite_start(function(summary){
 			_olympus_console_log(summary);
@@ -280,8 +287,7 @@ olympus_run("Olympus Acceptance Test", function(){
 		_olympus_acceptance_test_expect_struct_eq(summary, copied_summary);
 		
 		_olympus_console_log("Suite Finished");		
-		if (os_get_config() == "Olympus_bail"){			
-			//TODO: test in a separate suite when multi-suites support is added
+		if (suite_config == "Olympus_bail"){			
 			var expected_status = olympus_summary_status_bailed;
 			var actual_status = summary.status;
 			_olympus_acceptance_test_expect_eq(expected_status, actual_status);
@@ -300,7 +306,7 @@ olympus_run("Olympus Acceptance Test", function(){
 				var expected_result_initial = string_char_at(test_name, 1);
 				var expected_result;
 				var actual_result = olympus_get_test_status(the_test);
-				if (os_get_config() == "Olympus_only_test"){
+				if (suite_config == "Olympus_only_test"){
 					if (expected_result_initial == "O"){
 						expected_result = olympus_test_status_passed;
 					}
@@ -335,8 +341,7 @@ olympus_run("Olympus Acceptance Test", function(){
 				_olympus_acceptance_test_expect_eq(expected_result, actual_result, test_name);
 			}
 		}
-		show_message("Acceptance test passed!");
-		game_end();
+		show_message(_olympus_suite_ref._suite_name + " passed!");
 	});
 
 	//TODO: test the context for hooks
@@ -347,17 +352,60 @@ olympus_run("Olympus Acceptance Test", function(){
 	olympus_add_hook_after_each_test_finish(function(summary){
 		_olympus_console_log(summary)
 	});
-},
+}
+
+try{
+	olympus_run("Olympus Forbid Only Test", olympus_register_acceptance_tests,
+	{
+		olympus_suite_options_abandon_unfinished_record: _should_abandon_record, 
+		olympus_suite_options_skip_user_feedback_tests:  os_get_config() == "Olympus_dev",
+		olympus_suite_options_forbid_only: true,
+		olympus_suite_options_context: {suite_config: "Olympus_only_test"}
+	});
+}
+catch(err){
+	_olympus_acceptance_test_expect_eq(_olympus_suite_execution_error_forbid_only, err.message);
+}
+
+try{
+	olympus_run("Olympus Forbid Skip Test", olympus_register_acceptance_tests,
+	{
+		olympus_suite_options_abandon_unfinished_record: _should_abandon_record, 
+		olympus_suite_options_skip_user_feedback_tests:  os_get_config() == "Olympus_dev",
+		olympus_suite_options_forbid_skip: true,
+		olympus_suite_options_context: {suite_config: "Olympus_only_test"}
+	});
+}
+catch(err){
+	_olympus_acceptance_test_expect_eq(_olympus_suite_execution_error_forbid_skip, err.message);
+}
+
+olympus_run("Olympus Acceptance Test", olympus_register_acceptance_tests,
 {
-	//TODO: test the context in when meta scheduler is implemented.
-	//olympus_suite_options_context: other,
 	olympus_suite_options_abandon_unfinished_record: _should_abandon_record, 
 	olympus_suite_options_skip_user_feedback_tests:  os_get_config() == "Olympus_dev", 
-	olympus_suite_options_test_interval_milis: 0, 
 	olympus_suite_options_suppress_debug_logging: false, 
-	olympus_suite_options_bail_on_fail_or_crash: os_get_config() == "Olympus_bail",
 	olympus_suite_options_global_rejection_callback_name: "any_rejection_name_i_want",
 	olympus_suite_options_global_resolution_callback_name: "any_resolution_name_i_want",
-	olympus_suite_options_global_timeout_millis: 400
+	olympus_suite_options_global_timeout_millis: 400,
+	olympus_suite_options_context: {suite_config: "default", test_starter_instance_variable_to_be_replaced_by_custom_context: "replaced"},
+	olympus_suite_options_allow_uncaught: debug_mode && os_get_config() == "Olympus_dev"
+});
+
+olympus_run("Olympus Bail Test", olympus_register_acceptance_tests,
+{
+	olympus_suite_options_abandon_unfinished_record: _should_abandon_record, 
+	olympus_suite_options_skip_user_feedback_tests:  os_get_config() == "Olympus_dev",
+	olympus_suite_options_bail_on_fail_or_crash: true,
+	olympus_suite_options_context: {suite_config: "Olympus_bail"}
+});
+
+olympus_run("Olympus Only Test", olympus_register_acceptance_tests,
+{
+	olympus_suite_options_abandon_unfinished_record: _should_abandon_record, 
+	olympus_suite_options_skip_user_feedback_tests:  os_get_config() == "Olympus_dev",
+	olympus_suite_options_bail_on_fail_or_crash: true,
+	olympus_suite_options_context: {suite_config: "Olympus_only_test"},
+	olympus_suite_options_exit_on_completion: true
 });
 instance_destroy();

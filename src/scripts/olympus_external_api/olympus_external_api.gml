@@ -2,11 +2,11 @@
 @desc Starts a named test suite
 @param {string} suite_name The name of the suite
 @param {function} function_to_add_tests_and_hooks a function that adds all the tests and hooks 
-@param {struct} [olympus_suite_options] Optional configuration to pass in 
+@param {struct} [_Olympus_Suite_Options] Optional configuration to pass in 
 	@property {boolean}	[abandon_unfinished_record=false] - Enabling this disables the suite from resuming unfinished records that are caused by runner existing during the test.
 	@property {boolean}	[skip_user_feedback_tests=false] - Enabling this skips tests that requires user feedback.
 	@property {boolean}	[suppress_debug_logging=false] - Enabling this suppresses Olympus from logging to the IDE Output tab.
-	@property {number}	[test_interval_milis=0] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
+	@property {number}	[test_interval_milis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
 	@property {string}		[global_resolution_callback_name="callback"] - Name of the instance variable for the resolution callback
 	@property {string}		[global_rejection_callback_name="reject"] - Name of the instance variable for the rejection callback
 	@property {boolean}	[bail_on_fail_or_crash=false] - Enabling this will skip the rest of the tests if an earlier test fails or crashes
@@ -14,11 +14,14 @@
 	@property {number} [global_timeout_millis=60000] If any test is not able to resolve within this many milliseconds, the test will be failed.
 	@property {boolean} [allow_uncaught=false] By default, Olympus catches uncaught error and record it. Enabling this allows uncaught error to be thrown instead and will stop recording test summaries or resuming unfinished records. 
 	@property {boolean} [ignore_if_completed=false] Enabling this will ignore re-running the suite if the suite has been completed previously. 
+	@property {boolean} [forbid_only=false] Forbid test that uses the olympus_test_options_only option.
+	@property {boolean} [forbid_skip=false] Forbid skipping tests.
+	@property {boolean} [exit_on_completion=false] Call game_end() when suite completes.
 */
 function olympus_run(suite_name, function_to_add_tests_and_hooks) {
-	function_to_add_tests_and_hooks_with_context = method(self, function_to_add_tests_and_hooks);
+	var function_to_add_tests_and_hooks_with_context = method(self, function_to_add_tests_and_hooks);
 	var olympus_suite_options = argument_count > 2 ? argument[2] : {};
-	return new _Olympus_Test_Manager(suite_name,function_to_add_tests_and_hooks_with_context, olympus_suite_options);
+	return new _Olympus_Suite(suite_name,function_to_add_tests_and_hooks_with_context, olympus_suite_options);
 }
 
 #region olympus_suite_options
@@ -33,6 +36,9 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 	#macro olympus_suite_options_global_timeout_millis global_timeout_millis 
 	#macro olympus_suite_options_allow_uncaught allow_uncaught
 	#macro olympus_suite_options_ignore_if_completed ignore_if_completed
+	#macro olympus_suite_options_forbid_only forbid_only
+	#macro olympus_suite_options_forbid_skip forbid_skip
+	#macro olympus_suite_options_exit_on_completion exit_on_completion
 #endregion
 
 /** 
@@ -48,6 +54,7 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 function olympus_add_test(name, function_to_execute_synchronous_logic){	
 	function_to_execute_synchronous_logic = method(self, function_to_execute_synchronous_logic);
 	var olympus_test_options = argument_count > 2 ? argument[2] : {};
+	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_execute_synchronous_logic, noone, noone, olympus_test_options);
 	return this_test;
 }
@@ -81,6 +88,7 @@ function olympus_add_async_test(name, function_to_spawn_object){
 	var function_to_execute_at_resolution = argument_count > 2 ? argument[2] : function(){};
 	function_to_execute_at_resolution = method(self, function_to_execute_at_resolution);
 	var olympus_test_options = argument_count > 3 ? argument[3] : {};
+	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, noone, olympus_test_options);
 	return this_test;
 }
@@ -106,8 +114,18 @@ function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spa
 	var function_to_execute_at_resolution = argument_count > 3 ? argument[3] : function(){};
 	function_to_execute_at_resolution = method(self, function_to_execute_at_resolution);
 	var olympus_test_options = argument_count > 4 ? argument[4] : {};
+	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, prompt, olympus_test_options);
 	return this_test;
+}
+
+/** 
+@desc Syntactic sugar to omit running a suite
+@param {string} name Name of the suite
+@param {*} [...] 
+ */
+function xolympus_run(suite_name) {
+	show_debug_message("Skipped running the suite: " + suite_name);
 }
 
 /** 
@@ -148,7 +166,8 @@ function xolympus_add_async_test_with_user_feedback(name){
 */
 function olympus_add_hook_before_each_test_start(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
-	_olympus_add_hook_before_each_test_start(function_to_execute, context);
+	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
+	_olympus_suite_ref.function_to_call_on_test_start = function_with_setup;
 }
 
 /** 
@@ -158,7 +177,8 @@ function olympus_add_hook_before_each_test_start(function_to_execute){
 */
 function olympus_add_hook_after_each_test_finish(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
-	_olympus_add_hook_after_each_test_finish(function_to_execute, context);
+	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
+	_olympus_suite_ref.function_to_call_on_test_finish = function_with_setup;
 }
 
 /**
@@ -167,8 +187,9 @@ function olympus_add_hook_after_each_test_finish(function_to_execute){
 @param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
 function olympus_add_hook_before_suite_start(function_to_execute){
-	var context = argument_count > 1 ? argument[1] : self
-	_olympus_add_hook_before_suite_start(function_to_execute, context);
+	var context = argument_count > 1 ? argument[1] : self;
+	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
+	_olympus_suite_ref._function_to_call_on_suite_start = function_with_setup;
 }
 
 /** 
@@ -178,35 +199,36 @@ function olympus_add_hook_before_suite_start(function_to_execute){
  */
 function olympus_add_hook_after_suite_finish(function_to_execute){
 	var context = argument_count > 1 ? argument[1] : self
-	_olympus_add_hook_after_suite_finish(function_to_execute, context);
+	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
+	_olympus_suite_ref._function_to_call_on_suite_finish = function_with_setup;
 }
 
 /** 
 @desc Return a copy of the up-to-date suite summary struct. 
 */
 function olympus_get_current_suite_summary(){
-	return global._olympus_summary_manager.get_summary();
+	return global._olympus_suite_manager.current_suite._my_summary_manager_ref.get_summary();
 }
 
 /**
 @desc Return a boolean of whether the current suite contains failed or crashed tests
 */
 function olympus_current_suite_summary_has_failure_or_crash(){
-	return global._olympus_summary_manager.has_failure_or_crash();
+	return global._olympus_suite_manager.current_suite._my_summary_manager_ref.has_failure_or_crash();
 }
 
 /**
 @desc Return an array of test summaries for the tests that failed or crashed
 */
 function olympus_get_failed_or_crashed_tests(){
-	return global._olympus_summary_manager.get_failed_or_crashed_tests();
+	return global._olympus_suite_manager.current_suite._my_summary_manager_ref.get_failed_or_crashed_tests();
 }
 
 /** 
 @desc Return a copy of the array that contains all the up-to-date test summaries. 
 */
 function olympus_get_current_test_summaries(){
-	return global._olympus_summary_manager.get_summary().tests;
+	return global._olympus_suite_manager.current_suite._my_summary_manager_ref.get_summary().tests;
 }
 
 /** 
@@ -229,23 +251,24 @@ function olympus_get_test_name(test_summary){
 @desc Tests added between olympus_test_dependency_chain_begin() and olympus_test_dependency_chain_end() are sequentially dependent on each self
 */
 function olympus_test_dependency_chain_begin(){
-	global._olympus_test_manager.dependency_chain_begin();
+	_olympus_suite_ref.dependency_chain_begin();
 }
 
 /** 
 @desc Tests added between olympus_test_dependency_chain_begin() and olympus_test_dependency_chain_end() are sequentially dependent on each self
 */
 function olympus_test_dependency_chain_end(){
-	global._olympus_test_manager.dependency_chain_end();
+	_olympus_suite_ref.dependency_chain_end();
 }
 
 /**
 @desc Allows setting the global option olympus_suite_options_test_interval_milis in the mid of a suite  
-@param {number}	[test_interval_milis=0] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
+@param {Real}	[test_interval_milis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
 */
-function olympus_set_interval_millis_between_tests(test_interval_milis = 0){
-	with _olympus_async_test_controller{
-		_interval_between_tests = test_interval_milis/1000;
+function olympus_set_interval_millis_between_tests(test_interval_milis = olympus_test_interval_milis_default){
+	var current_suite = global._olympus_suite_manager.current_suite;
+	if (is_struct(current_suite)){
+		current_suite.test_interval_milis = test_interval_milis;
 	}
 }
 
