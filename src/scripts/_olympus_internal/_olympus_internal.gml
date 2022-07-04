@@ -216,6 +216,7 @@ function _Olympus_Suite_Options() constructor{
 	function_to_call_on_test_start = undefined;
 	function_to_call_on_test_finish = undefined;
 	exit_on_completion= false;
+	bypass_only = false;
 }
 
 ///@description Struct used to manage and execute all registered tests
@@ -386,7 +387,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 					throw({message: _olympus_suite_execution_error_forbid_only, test_name: this_test._name});
 				}
 				else{
-					should_remove_non_only_tests = true;
+					should_remove_non_only_tests = true;					
 				}
 			}			
 			
@@ -397,6 +398,11 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 				}				
 			}
 		}
+		if (bypass_only){
+			_olympus_console_log("bypass_only is enabled. Will not remove non-only tests.");
+			should_remove_non_only_tests = false;
+		}	
+		
 		if (should_remove_non_only_tests){
 			for (var i = array_length(_tests) -1; i >= 0; i--){
 				var this_test = _tests[i];
@@ -500,6 +506,7 @@ function _Olympus_Test(name, fn) constructor {
 	var resolution_context = options[$"resolution_context"];
 	var timeout_millis = options [$"timeout_millis"];
 	var only = options [$ "only"];
+	var importance = options [$ "importance"];
 
 	_name = name;
 	_test_fn = fn;
@@ -525,6 +532,7 @@ function _Olympus_Test(name, fn) constructor {
 	_mediator_id = -1;
 	_dependencies = [];
 	_timeout_time_source = undefined;
+	_importance = is_numeric(importance) ? importance : olympus_test_importance.normal;
 	
 	_get_non_passing_dependency_names = function(){
 		var non_passing_dependency_names = [];
@@ -626,7 +634,8 @@ function _Olympus_Test(name, fn) constructor {
 			index: _index,
 			name: _name,
 			millis: _completion_time,
-			status: status
+			status: status,
+			importance: _importance
 		}
 		if (_err){
 			individual_test_summary[$"err"] = _err;
@@ -1118,7 +1127,7 @@ function _Olympus_Summary_Manager(suite_name, _my_suite_ref) constructor{
 		return  json_parse(json_stringify(_summary));
 	}
 	
-	///@desc Return the copy of the summary struct
+	///@desc Return whether there are tests that failed or crashed
 	has_failure_or_crash = function(){
 		return (_summary.tallies.failed > 0 || _summary.tallies.crashed >0);				
 	}

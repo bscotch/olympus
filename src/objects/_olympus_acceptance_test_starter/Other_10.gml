@@ -215,8 +215,11 @@ var olympus_register_acceptance_tests = function(){
 	if (suite_config == "Olympus_only_test"){
 		olympus_add_test("O_only_test", function(){}, {olympus_test_options_only: true})
 		olympus_add_test("O_only_test2", function(){}, {olympus_test_options_only: true})
-	}	
-
+	}
+	else if (suite_config != "Olympus_bail"){
+		olympus_add_test("O_only_test3", function(){}, {olympus_test_options_only: true})
+	}
+	
 	olympus_add_test("F_post_crash", function(){
 		_olympus_acceptance_test_expect_eq(3, 4, "Comparing 3 to 4");
 	});
@@ -313,9 +316,12 @@ var olympus_register_acceptance_tests = function(){
 					else{
 						expected_result = olympus_test_status_skipped;
 					}
-				}
+				}				
 				else if (expected_result_initial != "B"){
 					switch (expected_result_initial) {
+						case "O":
+							expected_result = olympus_test_status_passed;
+							break;
 						case "P":
 							expected_result = olympus_test_status_passed;
 							break;
@@ -389,7 +395,8 @@ olympus_run("Olympus Acceptance Test", olympus_register_acceptance_tests,
 	olympus_suite_options_global_resolution_callback_name: "any_resolution_name_i_want",
 	olympus_suite_options_global_timeout_millis: 400,
 	olympus_suite_options_context: {suite_config: "default", test_starter_instance_variable_to_be_replaced_by_custom_context: "replaced"},
-	olympus_suite_options_allow_uncaught: debug_mode && os_get_config() == "Olympus_dev"
+	olympus_suite_options_allow_uncaught: debug_mode && os_get_config() == "Olympus_dev",	
+	olympus_suite_options_bypass_only: true
 });
 
 olympus_run("Olympus Bail Test", olympus_register_acceptance_tests,
@@ -408,4 +415,5 @@ olympus_run("Olympus Only Test", olympus_register_acceptance_tests,
 	olympus_suite_options_context: {suite_config: "Olympus_only_test"},
 	olympus_suite_options_exit_on_completion: true
 });
+
 instance_destroy();

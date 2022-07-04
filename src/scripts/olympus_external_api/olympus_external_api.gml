@@ -17,6 +17,7 @@
 	@property {boolean} [forbid_only=false] Forbid test that uses the olympus_test_options_only option.
 	@property {boolean} [forbid_skip=false] Forbid skipping tests.
 	@property {boolean} [exit_on_completion=false] Call game_end() when suite completes.
+	@property {boolean} [bypass_only=false] Run all tests and bypass the olympus_test_options_only option.
 */
 function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 	var function_to_add_tests_and_hooks_with_context = method(self, function_to_add_tests_and_hooks);
@@ -39,6 +40,7 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 	#macro olympus_suite_options_forbid_only forbid_only
 	#macro olympus_suite_options_forbid_skip forbid_skip
 	#macro olympus_suite_options_exit_on_completion exit_on_completion
+	#macro olympus_suite_options_bypass_only bypass_only
 #endregion
 
 /** 
@@ -50,6 +52,7 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
 	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
 	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
+	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
  */
 function olympus_add_test(name, function_to_execute_synchronous_logic){	
 	function_to_execute_synchronous_logic = method(self, function_to_execute_synchronous_logic);
@@ -67,6 +70,7 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 	#macro olympus_test_options_resolution_context resolution_context
 	#macro olympus_test_options_timeout_millis timeout_millis
 	#macro olympus_test_options_only only
+	#macro olympus_test_options_importance importance
 #endregion
 
 /** 
@@ -82,6 +86,7 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution	
 	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
 	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
+	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
  */
 function olympus_add_async_test(name, function_to_spawn_object){
 	function_to_spawn_object = method(self, function_to_spawn_object);
@@ -107,7 +112,8 @@ function olympus_add_async_test(name, function_to_spawn_object){
 	@property {struct} [context] The binding context for function_to_spawn_object. The default uses the calling context.
 	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution. The default uses the calling context.
 	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
-	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled	
+	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
+	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.	
  */
 function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spawn_object){	
 	function_to_spawn_object = method(self, function_to_spawn_object);
@@ -350,6 +356,12 @@ enum olympus_error_code{
 	failed_async_mediator_spawning = 10,
 	failed_sync = 11,
 	user_defined = 12
+}
+
+enum olympus_test_importance{
+	low = 100,
+	normal = 200,
+	high = 300
 }
 
 #endregion

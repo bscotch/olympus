@@ -26,12 +26,11 @@
           "Olympus_demo",
           "Olympus_acceptance_test"
         ],
-        "branch": "feat/olympus_multi_suite",
-        "revision": "792dffea9191f57a5d51059d13eb124815cbfa57"
+        "branch": "develop",
+        "revision": "d9fc74be4a8886ff04b432dfbfdb1689610da064"
       }
     ]
   },
   "author": "Shi Chen",
-  "license": "MIT",
-  "dependencies": {}
+  "license": "MIT"
 }
