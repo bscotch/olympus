@@ -2,7 +2,16 @@
 @desc Starts a named test suite
 @param {string} suite_name The name of the suite
 @param {function} function_to_add_tests_and_hooks a function that adds all the tests and hooks 
-@param {struct} [_Olympus_Suite_Options] Optional configuration to pass in 
+@param {struct.Olympus_Suite_Options} [olympus_suite_options] Optional configuration to pass in
+*/
+function olympus_run(suite_name, function_to_add_tests_and_hooks, olympus_suite_options = new Olympus_Suite_Options()) {
+	function_to_add_tests_and_hooks_with_context = method(self, function_to_add_tests_and_hooks);
+	return new _Olympus_Suite(suite_name,function_to_add_tests_and_hooks_with_context, olympus_suite_options);
+}
+
+/*
+@desc configuration to pass to olympus_run()
+@typedef {struct} Olympus_Suite_Options 
 	@property {boolean}	[abandon_unfinished_record=false] - Enabling this disables the suite from resuming unfinished records that are caused by runner existing during the test.
 	@property {boolean}	[skip_user_feedback_tests=false] - Enabling this skips tests that requires user feedback.
 	@property {boolean}	[suppress_debug_logging=false] - Enabling this suppresses Olympus from logging to the IDE Output tab.
@@ -19,10 +28,22 @@
 	@property {boolean} [exit_on_completion=false] Call game_end() when suite completes.
 	@property {boolean} [bypass_only=false] Run all tests and bypass the olympus_test_options_only option.
 */
-function olympus_run(suite_name, function_to_add_tests_and_hooks) {
-	var function_to_add_tests_and_hooks_with_context = method(self, function_to_add_tests_and_hooks);
-	var olympus_suite_options = argument_count > 2 ? argument[2] : {};
-	return new _Olympus_Suite(suite_name,function_to_add_tests_and_hooks_with_context, olympus_suite_options);
+function Olympus_Suite_Options() constructor{
+	abandon_unfinished_record = false
+	skip_user_feedback_tests = false
+	suppress_debug_logging = false
+	test_interval_milis = 0
+	global_resolution_callback_name = "callback"
+	global_rejection_callback_name = "reject"
+	bail_on_fail_or_crash = false
+	context = undefined
+	global_timeout_millis = 60000
+	allow_uncaught = false
+	ignore_if_completed = false
+	forbid_only = false
+	forbid_skip = false
+	exit_on_completion = false
+	bypass_only = false
 }
 
 #region olympus_suite_options
@@ -47,19 +68,36 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks) {
 @desc Adds a unit test with a name and a function with synchronous logic to execute
 @param {string} name Name of the test
 @param {function} function_to_execute_synchronous_logic The function to execute the synchronous logic
-@param {struct} [olympus_test_options]
-	@property {struct} [context] The binding context for function_to_execute_synchronous_logic. The default uses the calling context.
-	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
-	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
-	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
-	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
+@param {struct.Olympus_Test_Options} [olympus_test_options] optional configurations to pass in
  */
-function olympus_add_test(name, function_to_execute_synchronous_logic){	
+function olympus_add_test(name, function_to_execute_synchronous_logic, olympus_test_options = new Olympus_Test_Options()){	
 	function_to_execute_synchronous_logic = method(self, function_to_execute_synchronous_logic);
-	var olympus_test_options = argument_count > 2 ? argument[2] : {};
 	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_execute_synchronous_logic, noone, noone, olympus_test_options);
 	return this_test;
+}
+
+/*
+@desc Optional configurations to pass to olympus_add_*()
+@typedef {struct} Olympus_Test_Options 
+	@property {string} [resolution_callback_name] If you have not defined a global_resolution_callback_name or want to overwrite that, specify it here
+	@property {string} [rejection_callback_name] If you have not defined a global_rejection_callback_name or want to overwrite that, specify it here
+	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
+	@property {struct} [contex] The binding context for function_to_spawn_object. The default uses the calling context.
+	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution. The default uses the calling context.	
+	@property {number} [timeout_millis]  If this test is not able to resolve within this many milliseconds, the test will be failed. Default to the suite's default global timeout milis.
+	@property {boolean} [only] Enabling this option will disable other tests that don't have this option enabled
+	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
+ */
+function Olympus_Test_Options() constructor{
+	resolution_callback_name = undefined
+	rejection_callback_name = undefined
+	dependency_names = undefined
+	context = undefined
+	resolution_context = undefined
+	timeout_millis = undefined
+	only = false
+	importance = olympus_test_importance.normal
 }
 
 #region olympus_test_options
@@ -78,21 +116,11 @@ function olympus_add_test(name, function_to_execute_synchronous_logic){
 @param {string} name Name of the test
 @param {function} function_to_spawn_object The function to spawn the mediator object
 @param {function} [function_to_execute_at_resolution] The function to be executed when the async function resolves. The async result can be passed to this function for consumption.
-@param {struct} [olympus_test_options]
-	@property {string} [resolution_callback_name] If you have not defined a global_resolution_callback_name or want to overwrite that, specify it here
-	@property {string} [rejection_callback_name] If you have not defined a global_rejection_callback_name or want to overwrite that, specify it here
-	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
-	@property {struct} [contex] The binding context for function_to_spawn_object. The default uses the calling context.
-	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution	
-	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
-	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
-	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
+@param {struct.Olympus_Test_Options} [olympus_test_options] optional configurations to pass in
  */
-function olympus_add_async_test(name, function_to_spawn_object){
+function olympus_add_async_test(name, function_to_spawn_object, function_to_execute_at_resolution = function(){} , olympus_test_options = new Olympus_Test_Options()){
 	function_to_spawn_object = method(self, function_to_spawn_object);
-	var function_to_execute_at_resolution = argument_count > 2 ? argument[2] : function(){};
 	function_to_execute_at_resolution = method(self, function_to_execute_at_resolution);
-	var olympus_test_options = argument_count > 3 ? argument[3] : {};
 	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, noone, olympus_test_options);
 	return this_test;
@@ -105,21 +133,11 @@ function olympus_add_async_test(name, function_to_spawn_object){
 @param {string} prompt The text prompt to instruct the user about the pass/fail creteria
 @param {function} function_to_spawn_object The function to spawn the mediator object
 @param {function} [function_to_execute_at_resolution] The function to be executed when the async function resolves. The async result can be passed to this function for consumption.
-@param {struct} [olympus_test_options]
-	@property {string} [resolution_callback_name] If you have not defined a global_resolution_callback_name or want to overwrite that, specify it here
-	@property {string} [rejection_callback_name] If you have not defined a global_rejection_callback_name or want to overwrite that, specify it here
-	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
-	@property {struct} [context] The binding context for function_to_spawn_object. The default uses the calling context.
-	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution. The default uses the calling context.
-	@property {number} [timeout_millis=60000]  If this test is not able to resolve within this many milliseconds, the test will be failed.
-	@property {boolean} [only=false] Enabling this option will disable other tests that don't have this option enabled
-	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.	
+@param {struct.Olympus_Test_Options} [olympus_test_options] optional configurations to pass in
  */
-function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spawn_object){	
+function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spawn_object, function_to_execute_at_resolution = function(){}, olympus_test_options = new Olympus_Test_Options()){	
 	function_to_spawn_object = method(self, function_to_spawn_object);
-	var function_to_execute_at_resolution = argument_count > 3 ? argument[3] : function(){};
 	function_to_execute_at_resolution = method(self, function_to_execute_at_resolution);
-	var olympus_test_options = argument_count > 4 ? argument[4] : {};
 	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
 	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, prompt, olympus_test_options);
 	return this_test;
@@ -127,8 +145,8 @@ function olympus_add_async_test_with_user_feedback(name, prompt, function_to_spa
 
 /** 
 @desc Syntactic sugar to omit running a suite
-@param {string} name Name of the suite
-@param {*} [...] 
+@param {string} suite_name Name of the suite
+@param {any} [...] 
  */
 function xolympus_run(suite_name) {
 	show_debug_message("Skipped running the suite: " + suite_name);
@@ -137,7 +155,7 @@ function xolympus_run(suite_name) {
 /** 
 @desc Syntactic sugar to skip a test added by olympus_add_test
 @param {string} name Name of the test
-@param {*} [...] 
+@param {any} [...] 
  */
 function xolympus_add_test(name){	
 	var this_test = olympus_add_test(name, function(){});
@@ -148,7 +166,7 @@ function xolympus_add_test(name){
 /** 
 @desc Syntactic sugar to skip a test added by olympus_add_async_test
 @param {string} name Name of the test
-@param {*} [...] 
+@param {any} [...] 
  */
 function xolympus_add_async_test(name){
 	var this_test = xolympus_add_test(name);
@@ -158,7 +176,7 @@ function xolympus_add_async_test(name){
 /** 
 @desc Syntactic sugar to skip a test added by olympus_add_async_test_with_user_feedback
 @param {string} name Name of the test
-@param {*} [...] 
+@param {any} [...] 
  */
 function xolympus_add_async_test_with_user_feedback(name){	
 	var this_test = xolympus_add_async_test(name);
@@ -170,8 +188,7 @@ function xolympus_add_async_test_with_user_feedback(name){
 @param {function} function_to_execute The function to execute
 @param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
-function olympus_add_hook_before_each_test_start(function_to_execute){
-	var context = argument_count > 1 ? argument[1] : self
+function olympus_add_hook_before_each_test_start(function_to_execute, context = undefined){
 	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
 	_olympus_suite_ref.function_to_call_on_test_start = function_with_setup;
 }
@@ -181,8 +198,7 @@ function olympus_add_hook_before_each_test_start(function_to_execute){
 @param {function} function_to_execute The function to execute
 @param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
-function olympus_add_hook_after_each_test_finish(function_to_execute){
-	var context = argument_count > 1 ? argument[1] : self
+function olympus_add_hook_after_each_test_finish(function_to_execute, context = undefined){
 	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
 	_olympus_suite_ref.function_to_call_on_test_finish = function_with_setup;
 }
@@ -192,8 +208,7 @@ function olympus_add_hook_after_each_test_finish(function_to_execute){
 @param {Function} function_to_execute The function to execute
 @param {Struct} [context] The optional context to bind the function to. The default uses the calling context.
 */
-function olympus_add_hook_before_suite_start(function_to_execute){
-	var context = argument_count > 1 ? argument[1] : self;
+function olympus_add_hook_before_suite_start(function_to_execute, context = undefined){
 	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
 	_olympus_suite_ref._function_to_call_on_suite_start = function_with_setup;
 }
@@ -203,8 +218,7 @@ function olympus_add_hook_before_suite_start(function_to_execute){
 @param {function} function_to_execute The function to execute
 @param {Struct } [context] The optional context to bind the function to. The default uses the calling context.
  */
-function olympus_add_hook_after_suite_finish(function_to_execute){
-	var context = argument_count > 1 ? argument[1] : self
+function olympus_add_hook_after_suite_finish(function_to_execute, context = undefined){
 	var function_with_setup = _olympus_hook_set_up(function_to_execute, context);
 	_olympus_suite_ref._function_to_call_on_suite_finish = function_with_setup;
 }

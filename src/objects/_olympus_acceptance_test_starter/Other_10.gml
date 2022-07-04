@@ -347,7 +347,7 @@ var olympus_register_acceptance_tests = function(){
 				_olympus_acceptance_test_expect_eq(expected_result, actual_result, test_name);
 			}
 		}
-		show_message(_olympus_suite_ref._suite_name + " passed!");
+		show_debug_message(_olympus_suite_ref._suite_name + " passed!");
 	});
 
 	//TODO: test the context for hooks
