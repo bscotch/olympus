@@ -17,7 +17,7 @@
     {"spriteId":null,"colour":4278190080,"x":0,"y":0,"htiled":false,"vtiled":false,"hspeed":0.0,"vspeed":0.0,"stretch":false,"animationFPS":15.0,"animationSpeedType":0,"userdefinedAnimFPS":false,"visible":true,"depth":100,"userdefinedDepth":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"gridX":32,"gridY":32,"layers":[],"hierarchyFrozen":false,"effectEnabled":true,"effectType":null,"properties":[],"resourceVersion":"1.0","name":"Background","tags":[],"resourceType":"GMRBackgroundLayer",},
   ],
   "inheritLayers": false,
-  "creationCodeFile": "${project_dir}/rooms/rm_init/RoomCreationCode.gml",
+  "creationCodeFile": "${project_dir}/rooms/rm_entry/RoomCreationCode.gml",
   "inheritCode": false,
   "instanceCreationOrder": [],
   "inheritCreationOrder": false,
@@ -42,11 +42,11 @@
     "PhysicsWorldPixToMetres": 0.1,
   },
   "parent": {
-    "name": "Entry",
-    "path": "folders/Entry.yy",
+    "name": "Olympus",
+    "path": "Olympus.yyp",
   },
   "resourceVersion": "1.0",
-  "name": "rm_init",
+  "name": "rm_entry",
   "tags": [],
   "resourceType": "GMRoom",
 }
