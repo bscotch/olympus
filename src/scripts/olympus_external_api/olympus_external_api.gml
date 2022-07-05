@@ -73,7 +73,7 @@ function Olympus_Suite_Options() constructor{
 function olympus_add_test(name, function_to_execute_synchronous_logic, olympus_test_options = new Olympus_Test_Options()){	
 	function_to_execute_synchronous_logic = method(self, function_to_execute_synchronous_logic);
 	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
-	var this_test = new _Olympus_Test(name, function_to_execute_synchronous_logic, noone, noone, olympus_test_options);
+	var this_test = new _Olympus_Test(name, function_to_execute_synchronous_logic, undefined, undefined, olympus_test_options);
 	return this_test;
 }
 
@@ -122,7 +122,7 @@ function olympus_add_async_test(name, function_to_spawn_object, function_to_exec
 	function_to_spawn_object = method(self, function_to_spawn_object);
 	function_to_execute_at_resolution = method(self, function_to_execute_at_resolution);
 	olympus_test_options[$ "_olympus_suite_ref"] = _olympus_suite_ref;
-	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, noone, olympus_test_options);
+	var this_test = new _Olympus_Test(name, function_to_spawn_object, function_to_execute_at_resolution, undefined, olympus_test_options);
 	return this_test;
 }
 
@@ -294,11 +294,11 @@ function olympus_set_interval_millis_between_tests(test_interval_milis = olympus
 
 /**
 @desc Spawn an awaiter object that wait for the creation of a target object. If the target is created, the awaiter is destroyed, and the target's instance ID is returned. 
-@param {Id.Instance | Resource.GMObject}	_object_to_wait The target object to wait for
+@param {Id.Instance | Asset.GMObject}	_object_to_wait The target object to wait for
 */
 function olympus_spawn_object_creation_awaiter(_object_to_wait){
 	//Feather ignore GM1013 Need to detect variables from enclosing context
-	//Feather ignore GM1041 Need to support multiple types
+	//Feather ignore GM1041 Need to support union types
 	return olympus_spawn_awaiter(function(){return instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 
@@ -308,7 +308,7 @@ function olympus_spawn_object_creation_awaiter(_object_to_wait){
 */
 function olympus_spawn_object_absence_awaiter(_object_to_wait){
 	//Feather ignore GM1013 Need to detect variables from enclosing context
-	//Feather ignore GM1041 Need to support multiple types
+	//Feather ignore GM1041 Need to support union types
 	return olympus_spawn_awaiter(function(){return !instance_exists(object_to_wait)}, {object_to_wait: _object_to_wait});
 }
 

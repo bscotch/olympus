@@ -57,6 +57,7 @@ function _olympus_merge_context(target_function, new_context){
 	var source_context = method_get_self(target_function);
 	repeat 2 {
 		// Null check
+		//Feather ignore GM1041 need to support union types
 		if ( is_undefined(source_context) || (!is_struct(source_context) && !instance_exists(source_context))){
 			source_context = {};			
 		}
@@ -68,6 +69,7 @@ function _olympus_merge_context(target_function, new_context){
 			_variable_get_names = variable_instance_get_names;
 			_variable_set_ = variable_instance_set;
 			//Also set the instance id in the context
+			//Feather ignore GM1008 id is not a Struct Forbidden Variable
 			merged_context.id = source_context;
 		}
 		
@@ -89,6 +91,7 @@ function _olympus_merge_context(target_function, new_context){
 function _olympus_create_test_controller(){
 	if (!instance_exists(_olympus_async_test_controller)){
 		var _id = instance_create_depth(0,0, 0, _olympus_async_test_controller);
+		
 		if (!instance_exists(_id) || _id == -1){
 			show_error("Failed to instantiate _olympus_async_test_controller. Please run this function in an object or the room creation event!", true);	
 		}
@@ -136,22 +139,19 @@ function _olympus_get_callback_handle(callback_struct_variable_name){
 #endregion
 
 ///@arg {string} error_message
-///@arg {olympus_error_code} error_code
+///@arg {enum.olympus_error_code} error_code
 ///@arg {struct} [info] Any additional information that is packaged in a struct
 ///@arg {Array<String>} [stacktrace]
-function _Olympus_Test_Error(error_message, error_code) constructor{
+function _Olympus_Test_Error(error_message, error_code, info = undefined, stacktrace = undefined) constructor{
 	message = error_message;
 	code  = error_code;	
-	if (argument_count > 2) {
-		if (!is_undefined(argument[2])){
-			variable_struct_set(self, "info", argument[2]);
-		}
-	}	
-	if (argument_count > 3) {
-		if (!is_undefined(argument[3])){
-			variable_struct_set(self, "stacktrace", argument[3]);
-		}
+	if (!is_undefined(info)){
+		variable_struct_set(self, "info", info);
 	}
+		
+	if (!is_undefined(stacktrace)){
+		variable_struct_set(self, "stacktrace", stacktrace);
+	}	
 }
 
 function _Olympus_Suite_Manager() constructor {
@@ -244,7 +244,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 			for (var i = 0 ; i < options_keys_length; i++){
 				var options_key = options_keys[i];
 				var options_value = options[$options_key];
-				self[$options_key] = options_value;
+				variable_struct_set(self, options_key, options_value);
 				self.default_options[$options_key] = options_value;
 			}
 		}
@@ -345,7 +345,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 	}
 
 	///@description Queue the n-th test struct.
-	///@param {Integer} [test_index=undefined]
+	///@param {real} [test_index=undefined]
 	queue_test = function (test_index=undefined) {
 		if (is_undefined(test_index)){
 			// We are starting from the beginning
@@ -495,11 +495,10 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 ///@description Struct used to hold the registered test data for later execution
 ///@param {String} name
 ///@param {Function} fn
-///@param {Function} [resolution_fn=noone] The function to be executed when the async function resolves
-///@param {String} [prompt=noone] The prompt to instruct the tester
-///@param {struct} [options] {resolution_callback_name, rejection_callback_name}
-function _Olympus_Test(name, fn) constructor {	
-	var options =  argument_count > 4 ? argument[4] : {};
+///@param {Function} [resolution_fn] The function to be executed when the async function resolves
+///@param {String} [prompt] The prompt to instruct the tester
+///@param {struct.Olympus_Test_Options} [options] 
+function _Olympus_Test(name, fn, resolution_fn = undefined, prompt = undefined, options = {}) constructor {	
 	var resolution_callback_name = options[$"resolution_callback_name"];
 	var rejection_callback_name = options[$"rejection_callback_name"];
 	var context = options[$"context"];
@@ -519,7 +518,7 @@ function _Olympus_Test(name, fn) constructor {
 	_counting_time_out = true;
 	status = olympus_test_status_unstarted;
 	_err = undefined;
-	_resolution_fn = argument_count > 2 ? argument[2] : noone;
+	_resolution_fn = resolution_fn;
 	_is_async = is_method(_resolution_fn);	
 	_resolution_fn_context = is_struct(resolution_context) ? resolution_context : undefined;
 	_resolution_callback_name = is_string(resolution_callback_name) ? resolution_callback_name : "";
@@ -527,8 +526,8 @@ function _Olympus_Test(name, fn) constructor {
 	timeout = is_numeric(timeout_millis)? timeout_millis : my_suite_ref.global_timeout_millis;
 	_start_time = current_time;
 	_completion_time = undefined;
-	_user_feedback_prompt = argument_count > 3 ? argument[3] : noone;	
-	_user_feedback_required = _user_feedback_prompt != noone;
+	_user_feedback_prompt = prompt;	
+	_user_feedback_required = is_string(prompt);
 	_mediator_id = -1;
 	_dependencies = [];
 	_timeout_time_source = undefined;
@@ -552,7 +551,7 @@ function _Olympus_Test(name, fn) constructor {
 		var merged_context = _olympus_merge_context(_test_fn, _test_fn_context)
 		_test_fn = method(merged_context, _test_fn);
 						
-		if (_is_async && _resolution_fn != noone){
+		if (_is_async && is_method(_resolution_fn)){
 			var merged_context = _olympus_merge_context(_resolution_fn, _resolution_fn_context);
 			_resolution_fn = method(merged_context, _resolution_fn);
 		}						
@@ -637,7 +636,7 @@ function _Olympus_Test(name, fn) constructor {
 			status: status,
 			importance: _importance
 		}
-		if (_err){
+		if (is_struct(_err)){
 			individual_test_summary[$"err"] = _err;
 		}
 		return individual_test_summary;
@@ -698,7 +697,7 @@ function _Olympus_Test(name, fn) constructor {
 		_bind_callback_context();
 		_update_err_for_disabling_reasons();
 
-		if (_err){
+		if (is_struct(_err)){
 			_skip();			
 		}
 		else{
@@ -767,7 +766,7 @@ function _Olympus_Test(name, fn) constructor {
 
 	/// @desc By default, log the result as failure. If _allow_uncaught, throw the error instead
 	/// @param {Struct.Exception} err Error that caused the test to fail
-	/// @param {olympus_error_code} [code = olympus_error_code.user_defined] olympus_error_code enums
+	/// @param {enum.olympus_error_code} [code = olympus_error_code.user_defined] olympus_error_code enums
 	reject = function(err, code = olympus_error_code.user_defined){
 			if (my_suite_ref.allow_uncaught){
 				throw(err);
@@ -783,7 +782,7 @@ function _Olympus_Test(name, fn) constructor {
 	}
 	
 	/// @param {Struct.Exception | Mixed} err Error that caused the test to fail
-	/// @param {olympus_error_code} code olympus_error_code enums
+	/// @param {enum.olympus_error_code} code olympus_error_code enums
 	_convert_user_error_to_olympus_error = function(err, code) {
 		if (is_struct(err)){
 			err = json_parse(json_stringify(err));
@@ -1099,7 +1098,7 @@ function _Olympus_Summary_Manager(suite_name, _my_suite_ref) constructor{
 	}
 	
 	///@desc Update the summary's progress section
-	///@arg {Integer} test_index
+	///@arg {Real} test_index
 	///@arg {String} name
 	update_progress = function(test_index, name){
 		_summary.progress.last_test_index = test_index;

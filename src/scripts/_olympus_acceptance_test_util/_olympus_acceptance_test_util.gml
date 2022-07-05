@@ -1,21 +1,21 @@
 ///@description Expects that the evaluation to be true
-///@param {Mixed} evaluation
+///@param {Any} evaluation
 ///@param {String} [additional_message=""]
 function _olympus_acceptance_test_expect(evaluation, additional_message = "") {
 	_olympus_acceptance_test_throw_result(true, evaluation, evaluation == true, additional_message);
 }
 
 ///@description Expects that the actual value is equal to the expected value
-///@param {Mixed} expected
-///@param {Mixed} actual
+///@param {Any} expected
+///@param {Any} actual
 ///@param {String} [additional_message=""]
 function _olympus_acceptance_test_expect_eq(expected, actual, additional_message = "") {
 	_olympus_acceptance_test_throw_result(expected, actual, expected == actual, additional_message);
 }
 
 ///@description Expects that the structs to equal. Can only compare non-nested structs.
-///@param {Mixed} expected
-///@param {Mixed} actual
+///@param {Any} expected
+///@param {Any} actual
 ///@param {String} [additional_message]
 function _olympus_acceptance_test_expect_struct_eq(expected, actual){
 		var keys = variable_struct_get_names(expected);
@@ -34,12 +34,11 @@ function _olympus_acceptance_test_expect_struct_eq(expected, actual){
 }
 
 ///@description Throws an exception if the provided values do not match
-///@param {*} expected
-///@param {*} actual
+///@param {any} expected
+///@param {any} actual
 ///@param {Bool} matches
 ///@param {String} [additional_message]
-function _olympus_acceptance_test_throw_result(expected, actual, matches) {
-	var additional_message = argument_count > 3 ? argument[3] : "";
+function _olympus_acceptance_test_throw_result(expected, actual, matches, additional_message = "") {
 	if additional_message != ""{
 		additional_message += ": ";
 	}
