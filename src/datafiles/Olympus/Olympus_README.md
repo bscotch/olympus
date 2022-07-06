@@ -1,24 +1,6 @@
 # Olympus
 
-Testing framework for [GMS 2.3.1+](https://www.yoyogames.com/blog/592/gms2-version-2-3-1-full-release) projects with useful features:
-
-- **Async Support** - Easily test [async events](https://manual-en.yoyogames.com/#t=The_Asset_Editors%2FObject_Properties%2FAsync_Events.htm), [alarm](https://manual-en.yoyogames.com/#t=GameMaker_Language%2FGML_Reference%2FAsset_Management%2FInstances%2FInstance_Variables%2Falarm.htm) and [state machines](https://www.yoyogames.com/blog/555/coffee-break-tutorials-finite-state-machines-gml)
-- **Crash Recovery** - Resume progress after runner crashes
-- **Record Keeping** - Test results are recorded and json exportable
-- **Tester Feedback** - Easily compose instruction for testers and gather feedback
-- **Flexible** - Use any assertion library you want
-
-Olympus is developed by [Butterscotch Shenanigans](https://www.bscotch.net) ("Bscotch").
-
-_GameMaker Studio 2&reg; is the property of Yoyo Games&trade;. Butterscotch Shenanigans&reg; and Olympus are not affiliated with Yoyo Games._
-
-# Quick start
-
-Import the resources in the "Olympus" group, such as using [Stitch](https://github.com/bscotch/stitch#merging-projects-):
-
-```sh
-stitch merge --source=path/to/Olympus --if-folder-matches=Olympus
-```
+## Quick start
 
 Compose your test suite:
 
@@ -362,7 +344,7 @@ The prompt uses the cross-platform supported [get_string_async()](https://manual
 
 Full API References is shown in the [olympus_external_api script resource](../../scripts/olympus_external_api/olympus_external_api.gml)
 
-All the examples can be selected in the [demo room creation code](../../rooms/demo_olympus_rm/RoomCreationCode.gml) and run in the IDE with the `demo` config. You can only run one demo at a time as Olympus does not support concurrent suite running.
+All the examples can be selected in the [demo room creation code](../../rooms/demo_olympus_rm/RoomCreationCode.gml) and run in the IDE with the `default` config.
 
 ## Async Handler Function Name
 
@@ -511,54 +493,7 @@ By passing an options struct as `{dependency_names: ["test_name1", "test_name2"]
 
 Unit tests added between `olympus_test_dependency_chain_begin()` and `olympus_test_dependency_chain_end()` will be treated as sequentially dependent on each other, while tests outside of the chain are not affected.
 
-## Options
-
-### Global Options
-
-You can construct an options struct and pass to `olympus_run()` that will affect the test suite's global behavior across all unit tests:
-
-| Name                              | Type                 | Default                 | Description                                                                                                                                                                               |
-| --------------------------------- | -------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [resume_previous_record]          | <code>boolean</code> | <code>false</code>      | Enabling this starts the suite from wherever the last run left off. Otherwise, the suite starts from the beginning.                                                                       |
-| [skip_user_feedback_tests]        | <code>boolean</code> | <code>false</code>      | Enabling this skips tests that requires user feedback.                                                                                                                                    |
-| [suppress_debug_logging]          | <code>boolean</code> | <code>false</code>      | Enabling this suppresses Olympus from logging to the IDE Output tab.                                                                                                                      |
-| [test_interval_milis]             | <code>number</code>  | <code>0</code>          | Adds a delay between each test. Useful if you want to allow an audio or a visual cue to be played between tests.                                                                          |
-| [global_resolution_callback_name] | <code>string</code>  | <code>"callback"</code> | Name of the instance variable for the resolution callback for all the mediator objects                                                                                                    |
-| [global_rejection_callback_name]  | <code>string</code>  | <code>"reject"</code>   | Name of the instance variable for the rejection callback for all the mediator objects                                                                                                     |
-| [bail_on_fail_or_crash]           | <code>boolean</code> | <code>false</code>      | Enabling this will skip the rest of the tests if an earlier test fails or crashes                                                                                                         |
-| [context]                         | `struct`             |                         | The binding context for function_to_add_tests_and_hooks. The default uses the calling context.                                                                                            |
-| [global_timeout_milliseconds]     | `number`             | 60000                   | If any test is not able to resolve within this many milliseconds, the test will be failed.                                                                                                |
-| [allow_uncaught]                  | `boolean`            | `false`                 | By default, Olympus catches uncaught error and record it. Enabling this allows uncaught error to be thrown instead and will stop recording test summaries or resuming unfinished records. |
-| [ignore_if_completed]             | `boolean`            | `false`                 | Enabling this will ignore re-running the suite if the suite has been completed previously.                                                                                                |
-
-### Test Options
-
-You can construct an options struct and pass to the `olympus_add*` APIs that will affect that specific unit test's behavior:
-
-| Name                       | Type                              | Default            | Description                                                                                                                      |
-| -------------------------- | --------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| [resolution_callback_name] | <code>string</code>               |                    | If you have not defined a global_resolution_callback_name or want to overwrite that, specify it here                             |
-| [rejection_callback_name]  | <code>string</code>               |                    | If you have not defined a global_rejection_callback_name or want to overwrite that, specify it here                              |
-| [dependency_names]         | <code>string</code> \| `string[]` |                    | Names of tests whose failure will cause this test to be skipped                                                                  |
-| [context]                  | `struct`                          |                    | The binding context for function_to_execute_synchronous_logic or function_to_spawn_object. The default uses the calling context. |
-| [resolution_context]       | `struct`                          |                    | The binding context for function_to_execute_at_resolution. The default uses the calling context.                                 |
-| [timeout_milliseconds]     | `number`                          | 60000              | If this test is not able to resolve within this many milliseconds, the test will be failed.                                      |
-| [only]                     | <code>boolean</code>              | <code>false</code> | Enabling this option will disable other tests that don't have this option enabled.                                               |
-
-# Caveat
+## Caveat
 
 - Olympus uses `exception_unhandled_handler()` to log uncaught errors. If you also uses `exception_unhandled_handler()`, make sure to re-assign your error handler function after the Olympus test suites conclude.
 - All unit tests must have unique names to support the dependency chaining. If you named two tests with the same name, the runner should throw an error on boot.
-
-# Pull Request Process
-
-1. Ensure that the change passes the existing acceptance test by booting into the room `_olympus_acceptance_test_rm`.
-   - The acceptance test relies on [game_end()](https://manual-en.yoyogames.com/#t=GameMaker_Language%2FGML_Reference%2FGeneral_Game_Control%2Fgame_end.htm) to simulate a crash, so it can only be run on Windows, Linux and Mac.
-   - Passing the acceptance test should result in the [show_message](https://manual-en.yoyogames.com/#t=GameMaker_Language%2FGML_Reference%2FDebugging%2Fshow_message.htm) prompt. The runner should be booted twice as the first time will exit due to `game_end`.
-   - Failing the acceptance test will result in errors being thrown in the `olympus_add_hook_after_suite_finish` hook, where the unit test results are validated.
-2. Add unit tests corresponding to the change in `_olympus_acceptance_test_starter`'s [User Event 0](../../objects/_olympus_acceptance_test_starter/Other_10.gml) and ensure that both the new unit tests and the acceptance test as a whole pass.
-
-   - Unit test names should start with the initial `P_`, `F_`, `S_`, `C_` to indicate the expected `olympus_test_status` and the expected test result.
-
-3. Update this README.md with details of changes to the interface, including new environment variables, useful file locations, and dependencies.
-4. Submit a pull request to be reviewed by the project maintainer.

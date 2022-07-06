@@ -33,4 +33,5 @@ jobs:
         with:
           files: ${{env.ARTIFACT_NAME}}
           body_path: ${{ env.CHANGELOG_NAME}}
+          draft: true
  
