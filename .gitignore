@@ -1,3 +1,4 @@
 node_modules
 .rumpusCredentials
 COMMIT_EDITMSG
+*.yymps

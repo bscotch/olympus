@@ -32,5 +32,8 @@
     ]
   },
   "author": "Shi Chen",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@bscotch/yymps-export": "^0.0.4"
+  }
 }

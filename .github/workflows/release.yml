@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Create release
+
+on: 
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  ARTIFACT_NAME: Olympus.yymps
+
+jobs:
+  release:
+    runs-on: 'ubuntu-latest'
+    name: Create a release
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      - run: npm install        
+      - name: Create the artifact
+        run: npx yymps-export
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{env.ARTIFACT_NAME}}
+          draft: true
+ 

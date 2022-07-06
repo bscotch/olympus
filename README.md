@@ -1,10 +1,10 @@
-![Olympus (GameMaker Studio 2 Testing Framework) Logo](.github/logo.png)
+![Olympus (GameMaker Testing Framework) Logo](.github/logo.png)
 
 # Olympus
 
 ⚠ This project is still in active development, and APIs are subject to change. ⚠
 
-Testing framework for [GMS 2.3.1+](https://www.yoyogames.com/blog/592/gms2-version-2-3-1-full-release) projects with useful features:
+Testing framework for [GameMaker 2022.6+](https://gamemaker.io/en/blog/release-2022-6) projects with useful features:
 
 - **Record Keeping** - Test results are recorded and json exportable
 - **Crash Recovery** - Resume progress after runner crashes
