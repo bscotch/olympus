@@ -1,6 +1,6 @@
 {
   "name": "olympus",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Testing framework for GMS 2.3.1+ projects with useful features",
   "scripts": {
     "preversion": "git fetch --tags",
