@@ -8,6 +8,7 @@ on:
 
 env:
   ARTIFACT_NAME: Olympus.yymps
+  CHANGELOG_NAME: CHANGELOG.md
 
 permissions:
   contents: write
@@ -31,4 +32,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ${{env.ARTIFACT_NAME}}
+          body_path: ${{ env.CHANGELOG_NAME}}
  
