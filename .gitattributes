@@ -11,7 +11,6 @@
 *.nrr filter=lfs diff=lfs merge=lfs -text
 *.dylib filter=lfs diff=lfs merge=lfs -text
 *.so filter=lfs diff=lfs merge=lfs -text
-CHANGELOG.md filter=lfs diff=lfs merge=lfs -text
 *.exe filter=lfs diff=lfs merge=lfs -text
 *.yyz filter=lfs diff=lfs merge=lfs -text
 
