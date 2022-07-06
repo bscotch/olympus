@@ -9,6 +9,9 @@ on:
 env:
   ARTIFACT_NAME: Olympus.yymps
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: 'ubuntu-latest'
