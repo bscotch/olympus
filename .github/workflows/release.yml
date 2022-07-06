@@ -31,5 +31,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ${{env.ARTIFACT_NAME}}
-          draft: true
  

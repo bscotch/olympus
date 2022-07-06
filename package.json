@@ -34,6 +34,7 @@
   "author": "Shi Chen",
   "license": "MIT",
   "dependencies": {
-    "@bscotch/yymps-export": "^0.0.4"
+    "@bscotch/yymps-export": "^0.0.4",
+    "conventional-changelog-cli": "^2.2.2"
   }
 }
