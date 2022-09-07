@@ -69,9 +69,6 @@ Record written to file as Olympus_records/my_suite_name.olympus.json
     - [Bail](#bail)
     - [Defining Dependency by Names](#defining-dependency-by-names)
     - [Creating a Dependency Chain](#creating-a-dependency-chain)
-  - [Options](#options)
-    - [Global Options](#global-options)
-    - [Test Options](#test-options)
 - [Caveat](#caveat)
 - [Pull Request Process](#pull-request-process)
 
