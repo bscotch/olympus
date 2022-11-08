@@ -195,13 +195,13 @@ function _Olympus_Suite_Manager() constructor {
 }
 global._olympus_suite_manager = new _Olympus_Suite_Manager();
 
-#macro olympus_test_interval_milis_default 0.01 
+#macro olympus_test_interval_millis_default 0.01 
 
 function _Olympus_Suite_Options() constructor{
 	abandon_unfinished_record = false;
 	skip_user_feedback_tests = false;
 	suppress_debug_logging = false;
-	test_interval_milis = olympus_test_interval_milis_default;
+	test_interval_millis = olympus_test_interval_millis_default;
 	global_resolution_callback_name = "_olympus_test_resolution_callback";
 	global_rejection_callback_name = "_olympus_test_rejection_callback";
 	bail_on_fail_or_crash = false;
@@ -252,7 +252,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 
 	///@param {String} suite_name The name of the suite and the summary file
 	///@param {function} function_to_add_tests_and_hooks
-	///@param {Struct} options {abandon_unfinished_record:bool, skip_user_feedback_tests:bool, test_interval_milis: number, suppress_debug_logging:bool, global_resolution_callback_name: string, global_rejection_callback_name: string}
+	///@param {Struct} options {abandon_unfinished_record:bool, skip_user_feedback_tests:bool, test_interval_millis: number, suppress_debug_logging:bool, global_resolution_callback_name: string, global_rejection_callback_name: string}
 	_set_up_with_options = function(suite_name, function_to_add_tests_and_hooks, options){
 		var olympus_suite_parent = options[$ "olympus_suite_parent"];
 		if (is_struct(olympus_suite_parent)) {
@@ -268,7 +268,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 			
 		_check_for_only_and_skipped_tests();				
 
-		var test_interval_seconds = olympus_test_interval_milis_default/1000;
+		var test_interval_seconds = olympus_test_interval_millis_default/1000;
 		_test_interval_time_source = time_source_create(parent_test_interval_time_source, test_interval_seconds, time_source_units_seconds, _callback_between_test_intervals, [], 1, time_source_expire_after);		
 
 		_suite_name = suite_name;
@@ -321,7 +321,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 
 			if (_current_test._is_running()){
 				// An async test is running. Check for status change as soon as possible
-				time_source_reconfigure(_test_interval_time_source, olympus_test_interval_milis_default/1000, time_source_units_seconds, _callback_between_test_intervals, [], 1, time_source_expire_after);
+				time_source_reconfigure(_test_interval_time_source, olympus_test_interval_millis_default/1000, time_source_units_seconds, _callback_between_test_intervals, [], 1, time_source_expire_after);
 				time_source_start(_test_interval_time_source);				
 				return;
 			}
@@ -332,8 +332,8 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 					function_to_call_on_test_finish(this_test_summary);
 				}
 				queue_test(_current_test._index+1);
-				if (test_interval_milis != olympus_test_interval_milis_default){										
-					time_source_reconfigure(_test_interval_time_source, test_interval_milis/1000, time_source_units_seconds, _callback_between_test_intervals, [], 1, time_source_expire_after);
+				if (test_interval_millis != olympus_test_interval_millis_default){										
+					time_source_reconfigure(_test_interval_time_source, test_interval_millis/1000, time_source_units_seconds, _callback_between_test_intervals, [], 1, time_source_expire_after);
 					time_source_start(_test_interval_time_source);
 					return;
 				}
@@ -1148,10 +1148,9 @@ function _Olympus_Summary_Manager(suite_name, _my_suite_ref) constructor{
 	}
 
 	_get_prettified_summary = function(){
-		var _summary = get_summary();
 		variable_struct_remove(_summary, "progress");
 		variable_struct_remove(_summary, "config");
-		return _summary;
+		return self._summary;
 	}
 
 	///@desc Logs the suite completion state

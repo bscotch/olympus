@@ -15,7 +15,7 @@ function olympus_run(suite_name, function_to_add_tests_and_hooks, olympus_suite_
 	@property {boolean}	[abandon_unfinished_record=false] - Enabling this disables the suite from resuming unfinished records that are caused by runner existing during the test.
 	@property {boolean}	[skip_user_feedback_tests=false] - Enabling this skips tests that requires user feedback.
 	@property {boolean}	[suppress_debug_logging=false] - Enabling this suppresses Olympus from logging to the IDE Output tab.
-	@property {number}	[test_interval_milis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
+	@property {number}	[test_interval_millis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
 	@property {string}		[global_resolution_callback_name="callback"] - Name of the instance variable for the resolution callback
 	@property {string}		[global_rejection_callback_name="reject"] - Name of the instance variable for the rejection callback
 	@property {boolean}	[bail_on_fail_or_crash=false] - Enabling this will skip the rest of the tests if an earlier test fails or crashes
@@ -32,7 +32,7 @@ function Olympus_Suite_Options() constructor{
 	abandon_unfinished_record = false
 	skip_user_feedback_tests = false
 	suppress_debug_logging = false
-	test_interval_milis = 0
+	test_interval_millis = 0
 	global_resolution_callback_name = "callback"
 	global_rejection_callback_name = "reject"
 	bail_on_fail_or_crash = false
@@ -50,7 +50,7 @@ function Olympus_Suite_Options() constructor{
 	#macro olympus_suite_options_abandon_unfinished_record abandon_unfinished_record
 	#macro olympus_suite_options_skip_user_feedback_tests skip_user_feedback_tests
 	#macro olympus_suite_options_suppress_debug_logging suppress_debug_logging
-	#macro olympus_suite_options_test_interval_milis test_interval_milis
+	#macro olympus_suite_options_test_interval_millis test_interval_millis
 	#macro olympus_suite_options_global_resolution_callback_name global_resolution_callback_name
 	#macro olympus_suite_options_global_rejection_callback_name global_rejection_callback_name
 	#macro olympus_suite_options_bail_on_fail_or_crash bail_on_fail_or_crash
@@ -85,7 +85,7 @@ function olympus_add_test(name, function_to_execute_synchronous_logic, olympus_t
 	@property {string | string[]} [dependency_names] Names of tests whose failure will cause this test to be skipped
 	@property {struct} [contex] The binding context for function_to_spawn_object. The default uses the calling context.
 	@property {struct} [resolution_context] The binding context for function_to_execute_at_resolution. The default uses the calling context.	
-	@property {number} [timeout_millis]  If this test is not able to resolve within this many milliseconds, the test will be failed. Default to the suite's default global timeout milis.
+	@property {number} [timeout_millis]  If this test is not able to resolve within this many milliseconds, the test will be failed. Default to the suite's default global timeout millis.
 	@property {boolean} [only] Enabling this option will disable other tests that don't have this option enabled
 	@property {enum} [importance=olympus_test_importance.normal] The importance level of the test.
  */
@@ -282,13 +282,13 @@ function olympus_test_dependency_chain_end(){
 }
 
 /**
-@desc Allows setting the global option olympus_suite_options_test_interval_milis in the mid of a suite  
-@param {Real}	[test_interval_milis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
+@desc Allows setting the global option olympus_suite_options_test_interval_millis in the mid of a suite  
+@param {Real}	[test_interval_millis=0.01] - Adds a delay between each test. Can be used to allow an audio or a visual cue to be played between tests.
 */
-function olympus_set_interval_millis_between_tests(test_interval_milis = olympus_test_interval_milis_default){
+function olympus_set_interval_millis_between_tests(test_interval_millis = olympus_test_interval_millis_default){
 	var current_suite = global._olympus_suite_manager.current_suite;
 	if (is_struct(current_suite)){
-		current_suite.test_interval_milis = test_interval_milis;
+		current_suite.test_interval_millis = test_interval_millis;
 	}
 }
 
