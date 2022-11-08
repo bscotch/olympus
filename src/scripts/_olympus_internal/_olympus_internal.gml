@@ -41,16 +41,6 @@ function _olympus_console_log() {
 	}
 }
 
-function _olympus_time_source_destroy_recursive(time_source){
-	var _children = time_source_get_children(time_source);
-	var _count = array_length(_children);
-	for (var i = 0; i < _count; i ++)
-	{
-	    time_source_destroy(_children[i]);
-	}
-	time_source_destroy(time_source);
-}
-
 /// @desc Merge the new context with the original context of the target_function. In case of conflicts, the new context's value is used
 function _olympus_merge_context(target_function, new_context){
 	var merged_context = {};
@@ -421,7 +411,7 @@ function _Olympus_Suite(suite_name, function_to_add_tests_and_hooks, options): _
 
 	_clean_up = function() {
 		time_source_stop(_test_interval_time_source);
-		_olympus_time_source_destroy_recursive(_test_interval_time_source);
+		time_source_destroy(_test_interval_time_source, true);
 		show_debug_overlay(false);		
 	}	
 	
@@ -646,7 +636,7 @@ function _Olympus_Test(name, fn, resolution_fn = undefined, prompt = undefined, 
 		// After we are done testing 
 		if (is_undefined(_completion_time)){
 			_set_completion_time();			
-			_olympus_time_source_destroy_recursive(_timeout_time_source);			
+			time_source_destroy(_timeout_time_source, true);			
 		}								
 		my_suite_ref._my_summary_manager_ref.update_tests(get_summary());		
 		my_suite_ref._my_summary_manager_ref.update_progress(_index, _name);
